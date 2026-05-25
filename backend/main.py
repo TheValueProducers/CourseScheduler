@@ -74,7 +74,7 @@ app.add_middleware(
     allow_origins=[
         "http://127.0.0.1:5173",
         "http://localhost:5173",
-        "https://course-scheduler-c1p5.vercel.app"
+        "https://course-scheduler-7efc.vercel.app"
     ],
     allow_credentials=True,
     allow_methods=["*"],
