@@ -1,5 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 const SEMESTERS = [
   "Freshman Fall",
   "Freshman Spring",
@@ -65,7 +67,7 @@ function App() {
       setCoursesLoading(true);
       setCoursesError("");
       try {
-        const [coursesRes, programsRes] = await Promise.all([fetch("/api/courses"), fetch("/api/programs")]);
+        const [coursesRes, programsRes] = await Promise.all([fetch(`${API_URL}/api/courses`), fetch(`${API_URL}/api/programs`)]);
 
         if (!coursesRes.ok) {
           throw new Error(`Unable to load courses: ${coursesRes.status}`);
@@ -189,7 +191,7 @@ function App() {
         { type: "attended", classes: Array.from(attendedSet).sort(), chosen_degree: selectedDegrees }
       ];
 
-      const res = await fetch("/api/check-requirements", {
+      const res = await fetch(`${API_URL}/api/check-requirements`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)
@@ -350,7 +352,7 @@ function App() {
         optimization
       };
 
-      const res = await fetch("/api/schedule", {
+      const res = await fetch(`${API_URL}/api/schedule`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)
