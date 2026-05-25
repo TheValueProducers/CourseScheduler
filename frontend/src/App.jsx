@@ -61,6 +61,7 @@ function App() {
   const [generatedSchedule, setGeneratedSchedule] = useState({});
   const [generateStatus, setGenerateStatus] = useState("");
   const [generateError, setGenerateError] = useState("");
+  const [generateLoading, setGenerateLoading] = useState(false);
 
   useEffect(() => {
     async function loadInitialData() {
@@ -339,6 +340,7 @@ function App() {
   async function generateSchedule() {
     setGenerateStatus("");
     setGenerateError("");
+    setGenerateLoading(true);
 
     try {
       const payload = {
@@ -368,6 +370,8 @@ function App() {
     } catch (error) {
       setGenerateError(String(error.message || error));
       setGeneratedSchedule({});
+    } finally {
+      setGenerateLoading(false);
     }
   }
 
@@ -736,8 +740,15 @@ function App() {
         <section className="panel">
           <div className="panel-head">
             <h2>Generate Schedule</h2>
-            <button type="button" onClick={generateSchedule}>
-              Run Scheduler
+            <button type="button" onClick={generateSchedule} disabled={generateLoading} aria-busy={generateLoading}>
+              {generateLoading ? (
+                <span className="loading-inline">
+                  <span className="loading-dot" aria-hidden="true" />
+                  Running...
+                </span>
+              ) : (
+                "Run Scheduler"
+              )}
             </button>
           </div>
 
