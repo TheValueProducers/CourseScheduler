@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 
-const API_URL = "https://coursescheduler-production.up.railway.app";
+const API_URL = "http://localhost:8000"//"https://coursescheduler-production.up.railway.app";
 
 const SEMESTERS = [
   "Freshman Fall",
@@ -594,47 +594,49 @@ function App() {
                 </div>
               )}
 
-              <table>
-                <thead>
-                  <tr>
-                    <th>Course</th>
-                    <th>Status</th>
-                    <th>Action</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {highSchoolCourses.length === 0 ? (
+              <div className="semester-table-scroll">
+                <table>
+                  <thead>
                     <tr>
-                      <td colSpan={3} className="empty-row">
-                        No courses added yet.
-                      </td>
+                      <th>Course</th>
+                      <th>Status</th>
+                      <th>Action</th>
                     </tr>
-                  ) : (
-                    highSchoolCourses.map((entry) => (
-                      <tr key={entry.id}>
-                        <td>
-                          <div className="course-code">{entry.code}</div>
-                          <div className="course-title">{entry.longTitle}</div>
-                        </td>
-                        <td>
-                          <select value={entry.status} onChange={(e) => setHighSchoolCourseStatus(entry.id, e.target.value)}>
-                            {STATUS_OPTIONS.map((option) => (
-                              <option key={option} value={option}>
-                                {option}
-                              </option>
-                            ))}
-                          </select>
-                        </td>
-                        <td>
-                          <button type="button" className="danger" onClick={() => removeHighSchoolCourse(entry.id)}>
-                            Remove
-                          </button>
+                  </thead>
+                  <tbody>
+                    {highSchoolCourses.length === 0 ? (
+                      <tr>
+                        <td colSpan={3} className="empty-row">
+                          No courses added yet.
                         </td>
                       </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
+                    ) : (
+                      highSchoolCourses.map((entry) => (
+                        <tr key={entry.id}>
+                          <td>
+                            <div className="course-code">{entry.code}</div>
+                            <div className="course-title">{entry.longTitle}</div>
+                          </td>
+                          <td>
+                            <select value={entry.status} onChange={(e) => setHighSchoolCourseStatus(entry.id, e.target.value)}>
+                              {STATUS_OPTIONS.map((option) => (
+                                <option key={option} value={option}>
+                                  {option}
+                                </option>
+                              ))}
+                            </select>
+                          </td>
+                          <td>
+                            <button type="button" className="danger" onClick={() => removeHighSchoolCourse(entry.id)}>
+                              Remove
+                            </button>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
             </article>
 
             {SEMESTERS.map((semester) => {
@@ -687,50 +689,52 @@ function App() {
                     </div>
                   )}
 
-                  <table>
-                    <thead>
-                      <tr>
-                        <th>Course</th>
-                        <th>Status</th>
-                        <th>Action</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {(semesterCourses[semester] || []).length === 0 ? (
+                  <div className="semester-table-scroll">
+                    <table>
+                      <thead>
                         <tr>
-                          <td colSpan={3} className="empty-row">
-                            No courses added yet.
-                          </td>
+                          <th>Course</th>
+                          <th>Status</th>
+                          <th>Action</th>
                         </tr>
-                      ) : (
-                        semesterCourses[semester].map((entry) => (
-                          <tr key={entry.id}>
-                            <td>
-                              <div className="course-code">{entry.code}</div>
-                              <div className="course-title">{entry.longTitle}</div>
-                            </td>
-                            <td>
-                              <select
-                                value={entry.status}
-                                onChange={(e) => setCourseStatus(semester, entry.id, e.target.value)}
-                              >
-                                {STATUS_OPTIONS.map((option) => (
-                                  <option key={option} value={option}>
-                                    {option}
-                                  </option>
-                                ))}
-                              </select>
-                            </td>
-                            <td>
-                              <button type="button" className="danger" onClick={() => removeCourse(semester, entry.id)}>
-                                Remove
-                              </button>
+                      </thead>
+                      <tbody>
+                        {(semesterCourses[semester] || []).length === 0 ? (
+                          <tr>
+                            <td colSpan={3} className="empty-row">
+                              No courses added yet.
                             </td>
                           </tr>
-                        ))
-                      )}
-                    </tbody>
-                  </table>
+                        ) : (
+                          semesterCourses[semester].map((entry) => (
+                            <tr key={entry.id}>
+                              <td>
+                                <div className="course-code">{entry.code}</div>
+                                <div className="course-title">{entry.longTitle}</div>
+                              </td>
+                              <td>
+                                <select
+                                  value={entry.status}
+                                  onChange={(e) => setCourseStatus(semester, entry.id, e.target.value)}
+                                >
+                                  {STATUS_OPTIONS.map((option) => (
+                                    <option key={option} value={option}>
+                                      {option}
+                                    </option>
+                                  ))}
+                                </select>
+                              </td>
+                              <td>
+                                <button type="button" className="danger" onClick={() => removeCourse(semester, entry.id)}>
+                                  Remove
+                                </button>
+                              </td>
+                            </tr>
+                          ))
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
                 </article>
               );
             })}

@@ -340,6 +340,15 @@ select {
   font-size: 0.82rem;
 }
 
+.semester-table-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.semester-table-scroll table {
+  min-width: 420px;
+}
+
 .danger {
   background: #3f1b24;
   border-color: #6a2f3e;
