@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 
-const API_URL = import.meta.env.VITE_API_URL || "https://course-scheduler-nu.vercel.app";
+const API_URL = "https://course-scheduler-nu.vercel.app";
 
 const SEMESTERS = [
   "Freshman Fall",
