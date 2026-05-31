@@ -12,3 +12,17 @@ class CourseSummary(BaseModel):
 class ProgramOption(BaseModel):
     value: str
     label: str
+
+
+class CourseRecommendationRequest(BaseModel):
+    query: str
+
+
+class CourseRecommendationItem(BaseModel):
+    course: str
+    term: str | None = None
+    crn: int | None = None
+
+
+class CourseRecommendationResponse(BaseModel):
+    courses: list[CourseRecommendationItem]

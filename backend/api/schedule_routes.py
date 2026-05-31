@@ -4,7 +4,12 @@ from typing import List
 
 from fastapi import APIRouter, HTTPException
 
-from schemas.course_schema import CourseSummary, ProgramOption
+from schemas.course_schema import (
+    CourseRecommendationRequest,
+    CourseRecommendationResponse,
+    CourseSummary,
+    ProgramOption,
+)
 from schemas.schedule_schema import (
     CheckRequirementsInputItem,
     CheckRequirementsOutputItem,
@@ -13,6 +18,7 @@ from schemas.schedule_schema import (
     ScheduleRequest,
     ScheduleResponse,
 )
+from services.course_service import get_course_recommendations as get_course_recommendations_service
 from services.schedule_service import evaluate_requirements, generate_schedule, get_course_summaries, get_program_options
 
 router = APIRouter(tags=["schedule"])
@@ -31,6 +37,20 @@ def get_all_courses() -> List[CourseSummary]:
 @router.get("/api/programs", response_model=List[ProgramOption])
 def get_supported_programs() -> List[ProgramOption]:
     return [ProgramOption(**row) for row in get_program_options()]
+
+
+@router.post("/api/course-recommendations", response_model=CourseRecommendationResponse)
+def get_course_recommendations(payload: CourseRecommendationRequest) -> CourseRecommendationResponse:
+    try:
+        query = payload.query.strip()
+        if not query:
+            raise ValueError("Query must not be empty.")
+        courses = get_course_recommendations_service(query=query)
+        return CourseRecommendationResponse(courses=courses)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"Internal course recommendation error: {exc}") from exc
 
 
 @router.post("/api/schedule", response_model=ScheduleResponse)
