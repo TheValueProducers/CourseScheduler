@@ -1,55 +1,82 @@
-# import os
-# import numpy as np
-# import voyageai
-# from repositories.course_repository import get_course_catalog
+from __future__ import annotations
 
-# vo = voyageai.Client(api_key="pa-b3OJUu7aOQTJuZGBWvv3KoSiupw332No-LO0PeTPzfN")
+import json
+import os
+from pathlib import Path
 
-# query = "a course that teaches me linear algebra"
-# catalog = get_course_catalog()
+import numpy as np
+import voyageai
 
-# # Build candidate list
-# courses = sorted(catalog.values(), key=lambda c: (c.subject, c.course_number))
-# texts = [
-#     f"{course.subject} {course.course_number}: {course.long_title or 'No description'}"
-#     for course in courses
-# ]
+from services.course_service import build_texts_from_rows
 
-# print(f"Total courses: {len(texts)}")
 
-# # --- Stage 1: Embedding search (handles all 3260 courses) ---
-# # Embed in batches (max 120K tokens per request)
-# BATCH_SIZE = 128
-# all_embeddings = []
+def _read_env_file(path: Path) -> dict[str, str]:
+	values: dict[str, str] = {}
+	if not path.exists():
+		return values
 
-# for i in range(0, len(texts), BATCH_SIZE):
-#     batch = texts[i:i + BATCH_SIZE]
-#     result = vo.embed(batch, model="voyage-4-large", input_type="document")
-#     all_embeddings.extend(result.embeddings)
-#     print(f"Embedded {min(i + BATCH_SIZE, len(texts))}/{len(texts)} courses...")
+	for line in path.read_text(encoding="utf-8").splitlines():
+		stripped = line.strip()
+		if not stripped or stripped.startswith("#") or "=" not in stripped:
+			continue
+		key, value = stripped.split("=", 1)
+		values[key.strip()] = value.strip().strip('"').strip("'")
+	return values
 
-# doc_embeddings = np.array(all_embeddings)
 
-# # Embed the query
-# query_embedding = np.array(
-#     vo.embed([query], model="voyage-4-large", input_type="query").embeddings[0]
-# )
+def resolve_voyage_api_key() -> str:
+	env_key = "pa-b3OJUu7aOQTJuZGBWvv3KoSiupw332No-LO0PeTPzfN"
+	if env_key:
+		return env_key
 
-# # Get top 50 by cosine similarity
-# scores = np.dot(doc_embeddings, query_embedding)
-# top_indices = np.argsort(scores)[::-1][:50]
-# top_candidates = [texts[i] for i in top_indices]
+	backend_dir = Path(__file__).resolve().parent
+	candidate_env_files = [
+		backend_dir.parent / ".env",
+		backend_dir / ".env",
+		backend_dir / "data" / ".env",
+	]
 
-# print(f"\nTop 50 candidates shortlisted, reranking...")
+	for env_path in candidate_env_files:
+		values = _read_env_file(env_path)
+		key = values.get("VOYAGE_API_KEY", "").strip()
+		if key:
+			return key
 
-# # --- Stage 2: Rerank top 50 → final top 5 ---
-# rerank_result = vo.rerank(query, top_candidates, model="rerank-2.5", top_k=5)
+	raise RuntimeError(
+		"VOYAGE_API_KEY not found. Set it in shell or in .env (repo root/backend/data)."
+	)
 
-# print(f"\nTop courses for: '{query}'")
-# print("-" * 60)
-# for item in rerank_result.results:
-#     print(f"{item.relevance_score:.4f}  {item.document}")
 
-from repositories.course_repository import get_course_catalog
-courses = get_course_catalog()
-print(courses['COMP 140'])
+def generate_embeddings() -> None:
+	backend_dir = Path(__file__).resolve().parent
+	data_dir = backend_dir / "data"
+	json_path = data_dir / "rice_course_pages.json"
+	output_path = data_dir / "course_embeddings.npy"
+
+	api_key = resolve_voyage_api_key()
+	client = voyageai.Client(api_key=api_key)
+
+	with json_path.open("r", encoding="utf-8") as f:
+		rows = json.load(f)
+
+	texts = build_texts_from_rows(rows)
+	if not texts:
+		raise RuntimeError("No course texts generated from rice_course_pages.json")
+
+	all_embeddings: list[list[float]] = []
+	batch_size = 128
+	for i in range(0, len(texts), batch_size):
+		batch = texts[i : i + batch_size]
+		result = client.embed(batch, model="voyage-4-large", input_type="document")
+		all_embeddings.extend(result.embeddings)
+		print(f"Embedded {min(i + batch_size, len(texts))}/{len(texts)}")
+
+	matrix = np.asarray(all_embeddings, dtype=np.float32)
+	np.save(output_path, matrix)
+
+	print(f"Saved embeddings to {output_path}")
+	print(f"Embedding shape: {matrix.shape}")
+
+
+if __name__ == "__main__":
+	generate_embeddings()

@@ -18,6 +18,10 @@ const STATUS_OPTIONS = ["planned", "attended"];
 const PROGRESS_OPTIONS = ["planned", "attended"];
 const YEAR_ORDER = ["Freshman", "Sophomore", "Junior", "Senior"];
 const TERM_ORDER = ["Fall", "Spring"];
+const CATALOG_TERM_MAP = {
+  "Fall 2026": "202610",
+  "Spring 2026": "202620"
+};
 
 function normalizeCode(course) {
   return `${course.subject} ${String(course.course_number).padStart(3, "0")}`;
@@ -32,6 +36,20 @@ function parseListInput(value) {
 
 function blankSemesterMap() {
   return Object.fromEntries(SEMESTERS.map((semester) => [semester, []]));
+}
+
+function buildCatalogUrl(term, crn) {
+  const mappedTerm = typeof term === "string" ? CATALOG_TERM_MAP[term] : undefined;
+  if (!mappedTerm || crn === null || crn === undefined) {
+    return null;
+  }
+
+  const normalizedCrn = String(crn).trim();
+  if (!normalizedCrn) {
+    return null;
+  }
+
+  return `https://courses.rice.edu/courses/!SWKSCAT.cat?p_action=COURSE&p_term=${mappedTerm}&p_crn=${encodeURIComponent(normalizedCrn)}`;
 }
 
 function MainSchedulingPage() {
@@ -57,6 +75,10 @@ function MainSchedulingPage() {
   const [requirementsByType, setRequirementsByType] = useState({ planned: [], attended: [] });
   const [requirementsLoading, setRequirementsLoading] = useState(false);
   const [requirementsError, setRequirementsError] = useState("");
+  const [advancedSearchQuery, setAdvancedSearchQuery] = useState("");
+  const [advancedSearchResults, setAdvancedSearchResults] = useState([]);
+  const [advancedSearchLoading, setAdvancedSearchLoading] = useState(false);
+  const [advancedSearchError, setAdvancedSearchError] = useState("");
 
   const [generatedSchedule, setGeneratedSchedule] = useState({});
   const [generateStatus, setGenerateStatus] = useState("");
@@ -224,6 +246,40 @@ function MainSchedulingPage() {
 
   function selectProgressStatus(status) {
     setSelectedProgressStatus(status);
+  }
+
+  async function handleAdvancedSearch(event) {
+    event.preventDefault();
+
+    const query = advancedSearchQuery.trim();
+    if (!query) {
+      setAdvancedSearchError("Enter a search prompt before submitting.");
+      setAdvancedSearchResults([]);
+      return;
+    }
+
+    setAdvancedSearchLoading(true);
+    setAdvancedSearchError("");
+
+    try {
+      const res = await fetch(`${API_URL}/api/course-recommendations`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ query })
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.detail || `Request failed: ${res.status}`);
+      }
+
+      setAdvancedSearchResults(Array.isArray(data.courses) ? data.courses : []);
+    } catch (error) {
+      setAdvancedSearchError(String(error.message || error));
+      setAdvancedSearchResults([]);
+    } finally {
+      setAdvancedSearchLoading(false);
+    }
   }
 
   function addDegree(degreeValue) {
@@ -509,6 +565,64 @@ function MainSchedulingPage() {
             <li>Click <strong>Apply to Semester Tables</strong> to save the generated schedule into the planner.</li>
             <li>Click <strong>Check Requirements</strong> to see your progress toward degree requirements.</li>
           </ol>
+        </section>
+
+        <section className="panel advanced-search-panel">
+          <div className="panel-head">
+            <h2>Advanced Search</h2>
+          </div>
+
+          <p className="subtle">
+            Search for classes and review relevant matches before adding them to your plan.
+          </p>
+
+          <form className="advanced-search-form" onSubmit={handleAdvancedSearch}>
+            <input
+              value={advancedSearchQuery}
+              onChange={(e) => setAdvancedSearchQuery(e.target.value)}
+              placeholder="e.g. Give me a class about computational linear algebra"
+              aria-label="Advanced class search"
+            />
+            <button type="submit" disabled={advancedSearchLoading}>
+              {advancedSearchLoading ? "Searching..." : "Search"}
+            </button>
+          </form>
+
+          {advancedSearchError && <p className="error">{advancedSearchError}</p>}
+
+          <div className="advanced-search-results" aria-live="polite">
+            {advancedSearchLoading ? (
+              <p className="subtle">Searching for relevant classes...</p>
+            ) : advancedSearchResults.length === 0 ? (
+              <p className="empty-result">No advanced search results yet.</p>
+            ) : (
+              <ul className="advanced-search-result-list">
+                {advancedSearchResults.map((result, idx) => {
+                  const course = typeof result === "string" ? result : result.course;
+                  const term = typeof result === "string" ? null : result.term;
+                  const crn = typeof result === "string" ? null : result.crn;
+                  const courseUrl = buildCatalogUrl(term, crn);
+
+                  return (
+                    <li key={`${course}-${crn ?? idx}`}>
+                      {courseUrl ? (
+                        <a
+                          className="advanced-search-course advanced-search-course-link"
+                          href={courseUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                        >
+                          {course}
+                        </a>
+                      ) : (
+                        <div className="advanced-search-course">{course}</div>
+                      )}
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+          </div>
         </section>
 
         <section className="panel">

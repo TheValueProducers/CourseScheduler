@@ -222,6 +222,57 @@ button:disabled:hover {
   border-color: #31c9ad;
 }
 
+.advanced-search-panel {
+  gap: 0.9rem;
+}
+
+.advanced-search-form {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.7rem;
+  margin-top: 0.8rem;
+}
+
+.advanced-search-results {
+  margin-top: 0.8rem;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--panel-2);
+  min-height: 4rem;
+  padding: 0.75rem;
+}
+
+.advanced-search-result-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.55rem;
+}
+
+.advanced-search-result-list li {
+  border: 1px solid rgb(36 66 95 / 60%);
+  border-radius: 8px;
+  padding: 0.65rem 0.75rem;
+  background: #0b2439;
+}
+
+.advanced-search-course {
+  font-family: "IBM Plex Mono", monospace;
+  font-weight: 600;
+}
+
+.advanced-search-course-link {
+  color: #eaf4ff;
+  text-decoration: underline;
+  text-decoration-color: rgb(42 211 179 / 60%);
+  text-underline-offset: 0.16rem;
+}
+
+.advanced-search-course-link:hover {
+  color: var(--accent);
+}
+
 .warning {
   font-size: 0.92rem;
   color: #f8d896;
@@ -416,6 +467,12 @@ select {
 .instruction-list ul {
   margin: 0.3rem 0 0;
   padding-left: 1.1rem;
+}
+
+@media (max-width: 680px) {
+  .advanced-search-form {
+    grid-template-columns: 1fr;
+  }
 }
 
 .degree-picker-field {
