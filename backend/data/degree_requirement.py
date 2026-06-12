@@ -21,6 +21,8 @@ PROGRAM_LABEL_OVERRIDES: Dict[str, str] = {
     "cmor_ba_financial_engineering": "CMOR BA - Financial Engineering",
     "cmor_ba_supply_chain": "CMOR BA - Supply Chain",
     "cmor_ba_breadth": "CMOR BA - Breadth",
+    "bs_artificial_intelligence": "Bachelor of Science in Artificial Intelligence",
+    
 }
 
 
@@ -1232,6 +1234,85 @@ cmor_ba_breadth_requirement = (
     + [or_breadth_specialization]
 )
 
+bs_artificial_intelligence_degree_requirement: List[Dict[str, Any]] = [
+    {
+        "id": "calculus_1",
+        "requirement_type": "choose_n",
+        "courses": ["MATH 101", "MATH 105"],
+        "min_count": 1,
+        "max_count": 1,
+    },
+    {
+        "id": "calculus_2",
+        "requirement_type": "choose_n",
+        "courses": ["MATH 102", "MATH 106"],
+        "min_count": 1,
+        "max_count": 1,
+    },
+    {
+        "id": "linear_algebra",
+        "requirement_type": "choose_n",
+        "courses": ["CMOR 302", "CMOR 303", "MATH 221", "MATH 354", "MATH 355"],
+        "min_count": 1,
+        "max_count": 1,
+    },
+    {
+        "id": "statistics",
+        "requirement_type": "choose_n",
+        "courses": ["STAT 315", "DSCI 301"],
+        "min_count": 1,
+        "max_count": 1,
+    },
+    {
+        "id": "core_cs",
+        "requirement_type": "required_courses",
+        "courses": ["COMP 140", "COMP 182", "COMP 215", "COMP 222", "COMP 282"],
+        "min_count": 5,
+        "max_count": 5,
+    },
+    {
+        "id": "core_ai",
+        "requirement_type": "required_courses",
+        "courses": ["COMP 329", "COMP 345", "COMP 346", "COMP 348", "COMP 456", "COMP 457", "PHIL 108", "PSYC 203"],
+        "min_count": 8,
+        "max_count": 8,
+    },
+    {
+        "id": "ai_electives_theory",
+        "requirement_type": "choose_n",
+        "courses": ["COMP 409", "COMP 414", "COMP 480", "COMP 585"],
+        "min_count": 0,
+        "max_count": 1,
+    },
+    {
+        "id": "ai_electives_cognitive",
+        "requirement_type": "choose_n",
+        "courses": ["PSYC 430", "PSYC 468"],
+        "min_count": 0,
+        "max_count": 1,
+    },
+    {
+        "id": "ai_electives_knowledge",
+        "requirement_type": "choose_n",
+        "courses": ["COMP 459", "COMP 631"],
+        "min_count": 0,
+        "max_count": 1,
+    },
+    {
+        "id": "ai_electives_perception",
+        "requirement_type": "choose_n",
+        "courses": ["COMP 447", "ELEC 447", "COMP 484"],
+        "min_count": 0,
+        "max_count": 1,
+    },
+    {
+        "id": "ai_electives_robotics",
+        "requirement_type": "choose_n",
+        "courses": ["COMP 442", "COMP 450", "ELEC 450", "MECH 450", "COMP 462"],
+        "min_count": 0,
+        "max_count": 1,
+    },
+]
 
 def _program_key_from_var_name(var_name: str) -> str:
     if var_name.endswith("_degree_requirement"):
