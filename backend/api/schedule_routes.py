@@ -4,6 +4,8 @@ from typing import List
 
 from fastapi import APIRouter, HTTPException
 
+from db.database import SessionLocal
+from repositories.course_repository import CourseRepository
 from schemas.course_schema import (
     CourseRecommendationRequest,
     CourseRecommendationResponse,
@@ -19,7 +21,7 @@ from schemas.schedule_schema import (
     ScheduleResponse,
 )
 from services.course_service import get_course_recommendations as get_course_recommendations_service
-from services.schedule_service import evaluate_requirements, generate_schedule, get_course_summaries, get_program_options
+from services.schedule_service import evaluate_requirements, generate_schedule, get_program_options
 
 router = APIRouter(tags=["schedule"])
 
@@ -31,7 +33,9 @@ def health() -> dict[str, str]:
 
 @router.get("/api/courses", response_model=List[CourseSummary])
 def get_all_courses() -> List[CourseSummary]:
-    return [CourseSummary(**row) for row in get_course_summaries()]
+    with SessionLocal() as db:
+        rows = CourseRepository(db).get_all_courses()
+        return [CourseSummary(**row) for row in rows]
 
 
 @router.get("/api/programs", response_model=List[ProgramOption])

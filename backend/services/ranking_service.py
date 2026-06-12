@@ -3,8 +3,9 @@ from __future__ import annotations
 from statistics import fmean
 from typing import Any, Dict, List
 
-from repositories.course_repository import get_course_catalog
-from repositories.review_repository import list_reviews
+from db.database import SessionLocal
+from repositories.course_repository import CourseRepository
+from repositories.review_repository import ReviewRepository
 from schemas.rank_schema import CourseRankRow, GroupedCourseRankings, MetricRankings
 
 
@@ -75,7 +76,9 @@ def _get_all_courses_in_group_from_catalog(group: str, catalog: Dict[str, Any]) 
 
 
 def get_all_courses_in_group(group: str) -> List[str]:
-    return _get_all_courses_in_group_from_catalog(group, get_course_catalog())
+    with SessionLocal() as db:
+        catalog = CourseRepository(db).get_course_catalog()
+        return _get_all_courses_in_group_from_catalog(group, catalog)
 
 
 def _normalize_course_code(subject: str, course_number: Any) -> str | None:
@@ -109,8 +112,12 @@ def _compute_metric_average(review: Dict[str, Any], metric: str) -> float:
 
 
 def get_all_reviews_for_group(group: str) -> List[Dict[str, Any]]:
-    group_courses = set(get_all_courses_in_group(group))
-    reviews = list_reviews()
+    with SessionLocal() as db:
+        course_repo = CourseRepository(db)
+        review_repo = ReviewRepository(db)
+        group_courses = set(_get_all_courses_in_group_from_catalog(group, course_repo.get_course_catalog()))
+        reviews = review_repo.list_reviews()
+
     filtered_reviews: List[Dict[str, Any]] = []
 
     for review in reviews:
@@ -122,7 +129,8 @@ def get_all_reviews_for_group(group: str) -> List[Dict[str, Any]]:
 
 
 def get_global_average(metric: str) -> float:
-    reviews = list_reviews()
+    with SessionLocal() as db:
+        reviews = ReviewRepository(db).list_reviews()
     if not reviews:
         return 0.0
 
@@ -133,8 +141,7 @@ def get_bayesian_score(v: int, m: int, c: float, r: float) -> float:
     return (v / (v + m)) * r + (m / (v + m)) * c
 
 
-def _build_ranking_context(catalog: Dict[str, Any]) -> Dict[str, Any]:
-    all_reviews = list_reviews()
+def _build_ranking_context(catalog: Dict[str, Any], all_reviews: List[Dict[str, Any]]) -> Dict[str, Any]:
     reviews_by_course: Dict[str, List[Dict[str, Any]]] = {}
 
     for review in all_reviews:
@@ -205,8 +212,13 @@ def _rank_group(group: str, reviews_by_course: Dict[str, List[Dict[str, Any]]], 
 
 
 def get_rankings_for_group(group: str) -> MetricRankings:
-    catalog = get_course_catalog()
-    context = _build_ranking_context(catalog)
+    with SessionLocal() as db:
+        course_repo = CourseRepository(db)
+        review_repo = ReviewRepository(db)
+        catalog = course_repo.get_course_catalog()
+        all_reviews = review_repo.list_reviews()
+        context = _build_ranking_context(catalog, all_reviews)
+
     return _rank_group(
         group=group,
         reviews_by_course=context["reviews_by_course"],
@@ -216,8 +228,12 @@ def get_rankings_for_group(group: str) -> MetricRankings:
 
 
 def get_all_rankings_by_group() -> GroupedCourseRankings:
-    catalog = get_course_catalog()
-    context = _build_ranking_context(catalog)
+    with SessionLocal() as db:
+        course_repo = CourseRepository(db)
+        review_repo = ReviewRepository(db)
+        catalog = course_repo.get_course_catalog()
+        all_reviews = review_repo.list_reviews()
+        context = _build_ranking_context(catalog, all_reviews)
 
     rankings: Dict[str, MetricRankings] = {}
     for group in GROUPS:
