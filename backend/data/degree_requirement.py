@@ -1278,40 +1278,49 @@ bs_artificial_intelligence_degree_requirement: List[Dict[str, Any]] = [
         "max_count": 8,
     },
     {
-        "id": "ai_electives_theory",
-        "requirement_type": "choose_n",
-        "courses": ["COMP 409", "COMP 414", "COMP 480", "COMP 585"],
-        "min_count": 0,
-        "max_count": 1,
-    },
-    {
-        "id": "ai_electives_cognitive",
-        "requirement_type": "choose_n",
-        "courses": ["PSYC 430", "PSYC 468"],
-        "min_count": 0,
-        "max_count": 1,
-    },
-    {
-        "id": "ai_electives_knowledge",
-        "requirement_type": "choose_n",
-        "courses": ["COMP 459", "COMP 631"],
-        "min_count": 0,
-        "max_count": 1,
-    },
-    {
-        "id": "ai_electives_perception",
-        "requirement_type": "choose_n",
-        "courses": ["COMP 447", "ELEC 447", "COMP 484"],
-        "min_count": 0,
-        "max_count": 1,
-    },
-    {
-        "id": "ai_electives_robotics",
-        "requirement_type": "choose_n",
-        "courses": ["COMP 442", "COMP 450", "ELEC 450", "MECH 450", "COMP 462"],
-        "min_count": 0,
-        "max_count": 1,
-    },
+        "id": "ai_electives",
+        "requirement_type": "composite",
+        "min_count": 3,
+
+      "sub_requirements": [
+        {
+            "id": "ai_electives_theory",
+            "requirement_type": "choose_n",
+            "courses": ["COMP 409", "COMP 414", "COMP 480", "COMP 585"],
+            "min_count": 0,
+            "max_count": 1,
+        },
+        {
+            "id": "ai_electives_cognitive",
+            "requirement_type": "choose_n",
+            "courses": ["PSYC 430", "PSYC 468"],
+            "min_count": 0,
+            "max_count": 1,
+        },
+        {
+            "id": "ai_electives_knowledge",
+            "requirement_type": "choose_n",
+            "courses": ["COMP 459", "COMP 631"],
+            "min_count": 0,
+            "max_count": 1,
+        },
+        {
+            "id": "ai_electives_perception",
+            "requirement_type": "choose_n",
+            "courses": ["COMP 447", "ELEC 447", "COMP 484"],
+            "min_count": 0,
+            "max_count": 1,
+        },
+        {
+            "id": "ai_electives_robotics",
+            "requirement_type": "choose_n",
+            "courses": ["COMP 442", "COMP 450", "ELEC 450", "MECH 450", "COMP 462"],
+            "min_count": 0,
+            "max_count": 1,
+        },
+      ]  
+    }
+
 ]
 
 def _program_key_from_var_name(var_name: str) -> str:

@@ -18,11 +18,58 @@ if str(BACKEND_ROOT) not in sys.path:
     sys.path.insert(0, str(BACKEND_ROOT))
 
 from db.database import SessionLocal, engine, get_course_catalog_path
-from services.schedule_service import CourseRecord, load_course_catalog
+from parsers.parse_schedule import (
+    parse_credit_hours,
+    parse_cross_list,
+    parse_distribution,
+    parse_diversity,
+    parse_long_title,
+    parse_prereq_expr,
+)
+from services.schedule_service import CourseRecord
 
 
 def _stage(message: str) -> None:
     print(f"[seed_courses] {message}", flush=True)
+
+
+def _load_course_catalog_from_json(data_path: Path) -> Dict[str, CourseRecord]:
+    with data_path.open("r", encoding="utf-8") as f:
+        rows = json.load(f)
+
+    catalog: Dict[str, CourseRecord] = {}
+    for row in rows:
+        subject = str(row.get("subject", "")).strip().upper()
+        course_num_raw = str(row.get("course_number", "")).strip()
+        if not subject or not course_num_raw.isdigit():
+            continue
+
+        course_number = int(course_num_raw)
+        code = f"{subject} {course_number:03d}"
+        raw_text = row.get("raw_text") or ""
+        term = str(row.get("term", "")).strip().lower()
+        prereq = str(row.get("prerequisites") or "")
+
+        if code not in catalog:
+            catalog[code] = CourseRecord(
+                code=code,
+                subject=subject,
+                course_number=course_number,
+                long_title=parse_long_title(raw_text),
+                offered_terms=set(),
+                credit_hours=parse_credit_hours(raw_text),
+                distribution=parse_distribution(raw_text),
+                analyzing_diversity=parse_diversity(raw_text),
+                cross_list=parse_cross_list(raw_text),
+                prereq_tree=parse_prereq_expr(prereq),
+            )
+
+        if "fall" in term:
+            catalog[code].offered_terms.add("Fall")
+        if "spring" in term:
+            catalog[code].offered_terms.add("Spring")
+
+    return catalog
 
 
 def _format_value_for_column(value: Any, column_type: TypeEngine[Any]) -> Any:
@@ -130,7 +177,7 @@ def seed_courses() -> Dict[str, int]:
     _stage("starting course seed")
     data_path = get_course_catalog_path()
     _stage(f"loading course catalog from {data_path}")
-    catalog = load_course_catalog(data_path)
+    catalog = _load_course_catalog_from_json(data_path)
     _stage(f"loaded {len(catalog)} courses from catalog")
     catalog = _dedupe_catalog_by_code(catalog)
 
