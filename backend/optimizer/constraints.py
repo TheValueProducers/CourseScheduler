@@ -1,11 +1,16 @@
 from __future__ import annotations
 
-from typing import Any
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Set, Tuple
+
+from ortools.sat.python import cp_model
 from parsers.parse_schedule import (
     normalize_course_code,
 )
 
 from data.degree_requirement import get_supported_program_options, get_supported_program_requirements
+
+if TYPE_CHECKING:
+    from services.schedule_service import CourseRecord
 
 _normalize_course_code = normalize_course_code
 
@@ -18,6 +23,22 @@ DISTRIBUTION_REQUIREMENTS = {
     "Distribution Group II": 3,
     "Distribution Group III": 3,
 }
+
+CREDIT_UNIT_SCALE = 2
+MAX_SEMESTER_CREDITS = 18 * CREDIT_UNIT_SCALE
+MIN_GRADUATION_CREDITS = 120 * CREDIT_UNIT_SCALE
+COMFORT_MIN_CREDITS = 0
+COMFORT_MAX_CREDITS = 16 * CREDIT_UNIT_SCALE
+
+
+def _credit_hours_to_units(credit_hours: Optional[float]) -> int:
+    if credit_hours is None:
+        return 0
+
+    units = int(round(float(credit_hours) * CREDIT_UNIT_SCALE))
+    if abs(units / CREDIT_UNIT_SCALE - float(credit_hours)) > 1e-9:
+        raise ValueError(f"Unsupported credit hour value: {credit_hours}")
+    return units
 
 def _prereq_satisfied_bool(
     tree: Optional[Dict[str, Any]],
@@ -100,6 +121,11 @@ def _prereq_satisfied_bool(
 
     return satisfied
 
+# ==================================================
+
+# Course Requirements Constraints
+
+# ==================================================
 
 
 def _add_course_requirement_constraints(
@@ -113,24 +139,34 @@ def _add_course_requirement_constraints(
 ) -> None:
     # Course-level requirements
     for req in expanded_requirements:
+        if req.get("is_subrequirement") is True:
+            continue
+
         req_id = req["id"]
         available = req_available[req_id]
 
+        # Required Courses
         if req["requirement_type"] == "required_courses":
             for course in available:
                 model.add(use_for_req[(course, req_id)] == 1)
+        
+        # Courses with a minimum number and maximum number chosen
         elif req["requirement_type"] == "choose_n":
             model.add(sum(use_for_req[(course, req_id)] for course in available) >= req["min_count"])
             if "max_count" in req:
                 model.add(sum(use_for_req[(course, req_id)] for course in available) <= req["max_count"])
+        
+        # Courses with groups chosen like ("MATH 212") OR ("MATH 222" AND "MATH 232")
         elif req["requirement_type"] == "choose_group":
             available_set = set(available)
             group_met_vars: List[cp_model.IntVar] = []
 
             for idx, raw_group in enumerate(req.get("options", [])):
+
+                # Check if the group is a list
                 if not isinstance(raw_group, list):
                     continue
-
+            
                 group_courses = [_normalize_course_code(c) for c in raw_group]
                 if not group_courses:
                     continue
@@ -197,6 +233,106 @@ def _add_course_requirement_constraints(
 
 
 
+# ==================================================
+
+# General Graduation Requirements Constraints
+
+# ==================================================
+
+def _add_distribution_constraints(
+    model: cp_model.CpModel,
+    take: Dict[Tuple[str, int], cp_model.IntVar],
+    semester_range: List[int],
+    all_courses: Set[str],
+    completed: Set[str],
+    distribution_courses: Dict[str, List[str]],
+) -> None:
+    
+    # A dictionary that maps (course, dist) to optimization variable
+    satisfy_dist: Dict[Tuple[str, str], cp_model.IntVar] = {}
+
+    #Looping through each distribution
+    for dist, min_courses in DISTRIBUTION_REQUIREMENTS.items():
+
+        # Looping through each course in each distribution
+        valid_courses = [c for c in distribution_courses[dist] if c in all_courses]
+        for course in valid_courses:
+            if course not in completed:
+                satisfy_dist[(course, dist)] = model.new_bool_var(
+                    f"dist_{dist.replace(' ', '_')}_{course.replace(' ', '_')}"
+                )
+                # Only count a future distribution course if it is actually taken.
+                # This conditions mean a course can be used to satisfy dist or not
+                # If a course is not taken, it can not be used to satisfy dist
+                # If it is taken, it can be either used to satisfy dist or not
+                model.add(satisfy_dist[(course, dist)] <= sum(take[(course, s)] for s in semester_range))
+
+        #The number of completed courses and future courses must be larger than 3
+        completed_satisfying = [c for c in valid_courses if c in completed]
+        future_satisfying = sum(satisfy_dist[(c, dist)] for c in valid_courses if c not in completed)
+        model.add(len(completed_satisfying) + future_satisfying >= min_courses)
+
+        # Getting the course code
+        subjects = {c.split(" ")[0] for c in valid_courses}
+
+        # The number of courses from the same subject that counts towards distribution must be 2 or less
+        for subject in subjects:
+            completed_from_subject = min(2, sum(1 for c in completed_satisfying if c.split(" ")[0] == subject))
+            future_from_subject = sum(
+                satisfy_dist[(c, dist)]
+                for c in valid_courses
+                if c not in completed and c.split(" ")[0] == subject
+            )
+            model.add(completed_from_subject + future_from_subject <= 2)
+
+
+
+def _add_diversity_constraints(
+    model: cp_model.CpModel,
+    take: Dict[Tuple[str, int], cp_model.IntVar],
+    semester_range: List[int],
+    all_courses: Set[str],
+    completed: Set[str],
+    diversity_courses: List[str],
+) -> None:
+    valid_diversity = [c for c in diversity_courses if c in all_courses]
+    if not any(c in completed for c in valid_diversity):
+        model.add(sum(take[(c, s)] for c in valid_diversity if c not in completed for s in semester_range) >= 1)
+
+
+def _add_fwis_constraints(
+    model: cp_model.CpModel,
+    take: Dict[Tuple[str, int], cp_model.IntVar],
+    semester_range: List[int],
+    base_semester_number: int,
+    all_courses: Set[str],
+    completed: Set[str],
+    fwis_courses: List[str],
+) -> None:
+    valid_fwis = [c for c in fwis_courses if c in all_courses and c not in completed]
+    freshman_semesters = [s for s in semester_range if (base_semester_number + s) in (0, 1)]
+
+    for c in valid_fwis:
+        for s in semester_range:
+            if s not in freshman_semesters:
+                model.add(take[(c, s)] == 0)
+
+    if fwis_courses and not any(c in completed for c in fwis_courses) and freshman_semesters:
+        model.add(sum(take[(c, s)] for c in valid_fwis for s in freshman_semesters) == 1)
+
+
+def _add_lpap_constraints(
+    model: cp_model.CpModel,
+    take: Dict[Tuple[str, int], cp_model.IntVar],
+    semester_range: List[int],
+    all_courses: Set[str],
+    completed: Set[str],
+    lpap_courses: List[str],
+) -> None:
+    valid_lpap = [c for c in lpap_courses if c in all_courses and c not in completed]
+    if lpap_courses and not any(c in completed for c in lpap_courses):
+        model.add(sum(take[(c, s)] for c in valid_lpap for s in semester_range) == 1)
+
 
 def _add_general_graduation_constraints(
     model: cp_model.CpModel,
@@ -210,53 +346,11 @@ def _add_general_graduation_constraints(
     fwis_courses: List[str],
     lpap_courses: List[str],
 ) -> None:
-    # Distribution requirements
-    satisfy_dist: Dict[Tuple[str, str], cp_model.IntVar] = {}
-    for dist, min_courses in DISTRIBUTION_REQUIREMENTS.items():
-        valid_courses = [c for c in distribution_courses[dist] if c in all_courses]
-        for course in valid_courses:
-            if course not in completed:
-                satisfy_dist[(course, dist)] = model.new_bool_var(
-                    f"dist_{dist.replace(' ', '_')}_{course.replace(' ', '_')}"
-                )
-                # Only count a future distribution course if it is actually taken.
-                model.add(satisfy_dist[(course, dist)] <= sum(take[(course, s)] for s in semester_range))
+    _add_distribution_constraints(model, take, semester_range, all_courses, completed, distribution_courses)
+    _add_diversity_constraints(model, take, semester_range, all_courses, completed, diversity_courses)
+    _add_fwis_constraints(model, take, semester_range, base_semester_number, all_courses, completed, fwis_courses)
+    _add_lpap_constraints(model, take, semester_range, all_courses, completed, lpap_courses)
 
-        completed_satisfying = [c for c in valid_courses if c in completed]
-        future_satisfying = sum(satisfy_dist[(c, dist)] for c in valid_courses if c not in completed)
-        model.add(len(completed_satisfying) + future_satisfying >= min_courses)
-
-        subjects = {c.split(" ")[0] for c in valid_courses}
-        for subject in subjects:
-            completed_from_subject = min(2, sum(1 for c in completed_satisfying if c.split(" ")[0] == subject))
-            future_from_subject = sum(
-                satisfy_dist[(c, dist)]
-                for c in valid_courses
-                if c not in completed and c.split(" ")[0] == subject
-            )
-            model.add(completed_from_subject + future_from_subject <= 2)
-
-    # Diversity requirement
-    valid_diversity = [c for c in diversity_courses if c in all_courses]
-    if not any(c in completed for c in valid_diversity):
-        model.add(sum(take[(c, s)] for c in valid_diversity if c not in completed for s in semester_range) >= 1)
-
-    # FWIS requirement + freshman-only offering window
-    valid_fwis = [c for c in fwis_courses if c in all_courses and c not in completed]
-    freshman_semesters = [s for s in semester_range if (base_semester_number + s) in (0, 1)]
-
-    for c in valid_fwis:
-        for s in semester_range:
-            if s not in freshman_semesters:
-                model.add(take[(c, s)] == 0)
-
-    if fwis_courses and not any(c in completed for c in fwis_courses) and freshman_semesters:
-        model.add(sum(take[(c, s)] for c in valid_fwis for s in freshman_semesters) == 1)
-
-    # LPAP requirement
-    valid_lpap = [c for c in lpap_courses if c in all_courses and c not in completed]
-    if lpap_courses and not any(c in completed for c in lpap_courses):
-        model.add(sum(take[(c, s)] for c in valid_lpap for s in semester_range) == 1)
 
 
 def _add_cross_list_constraints(
@@ -268,6 +362,8 @@ def _add_cross_list_constraints(
     semester_range: List[int],
 ) -> None:
     cross_groups: Set[frozenset[str]] = set()
+
+    # Create set of frozenset of cross-listed courses
     for course in all_courses:
         group = {course}
         for cross in catalog[course].cross_list:
@@ -277,6 +373,7 @@ def _add_cross_list_constraints(
         if len(group) > 1:
             cross_groups.add(frozenset(group))
 
+    # Only one of each group can be taken
     for group in cross_groups:
         completed_count = sum(1 for c in group if c in completed)
         planned_count = sum(take[(c, s)] for c in group if c not in completed for s in semester_range)
@@ -291,7 +388,11 @@ def _add_single_take_constraints(
     semester_range: List[int],
 ) -> None:
     for course in all_courses:
+
+        # A course can only be taken once
         model.add(sum(take[(course, s)] for s in semester_range) <= 1)
+
+        #If a course is completed, it can not be taken anymore
         if course in completed:
             model.add(sum(take[(course, s)] for s in semester_range) == 0)
 
@@ -304,6 +405,8 @@ def _add_scheduled_course_constraints(
     base_semester_number: int,
     semester_range: List[int],
 ) -> None:
+    
+    # If a course is scheduled in a semester, take is set to 1
     for course, absolute_sem in scheduled.items():
         if course in completed:
             continue
@@ -316,18 +419,52 @@ def _add_scheduled_course_constraints(
 
         model.add(take[(course, local_sem)] == 1)
 
+
+
+
 def _add_requirement_overlap_constraints(
     model: cp_model.CpModel,
     req_available: Dict[str, List[str]],
     use_for_req: Dict[Tuple[str, str], cp_model.IntVar],
 ) -> None:
+    """
+    A course can not satisfy two requirements in a single degree but can be used to satisfy multiple requirements
+    across many degrees
+
+    """
+
+    # Map degree to requirements
+    # For Example
+    # req_ids_by_degree = {
+
+    #     "CS": [
+
+    #         "CS:core",
+
+    #         "CS:theory",
+
+    #         "CS:systems"
+
+    #     ],
+
+    #     "MATH": [
+
+    #         "MATH:linear_algebra",
+
+    #         "MATH:statistics"
+
+    #     ]
+
+    # }
     req_ids_by_degree: Dict[str, List[str]] = {}
     for req_id in req_available:
         degree_key = req_id.split(":", 1)[0] if ":" in req_id else "__single_degree__"
         req_ids_by_degree.setdefault(degree_key, []).append(req_id)
 
-    for course in {c for c, _ in use_for_req}:
-        for req_ids in req_ids_by_degree.values():
+    for course in {c for c, _ in use_for_req}: # Iterate through every course
+        for req_ids in req_ids_by_degree.values(): # For each requirement groups in a degree
+
+            # Each course can be used for requirement once
             model.add(
                 sum(use_for_req[(course, req_id)] for req_id in req_ids if (course, req_id) in use_for_req) <= 1
             )
@@ -347,12 +484,16 @@ def _add_prerequisite_constraints(
     in semester sem, 0 if otherwise
 
     """
+
+    # For every semester in every course, check if taking it in that semester is feasible
     for course in all_courses:
         prereq_tree = catalog[course].prereq_tree
         if prereq_tree is None:
             continue
         for sem in semester_range:
-            prereq_ok = _prereq_satisfied_bool(prereq_tree, sem, model, take, completed, semester_range)
+            prereq_ok = _prereq_satisfied_bool(prereq_tree, sem, model, take, completed, semester_range) 
+
+            #Take must equal 0 if prereq_ok is 0, else it can be in {0,1}
             model.add(take[(course, sem)] <= prereq_ok)
 
 
@@ -397,23 +538,23 @@ def _add_credit_constraints(
         if c in course_to_credits
         for s in semester_range
     )
-    completed_credits = sum(catalog[c].credit_hours or 0 for c in completed if c in catalog)
+    completed_credits = sum(_credit_hours_to_units(catalog[c].credit_hours) for c in completed if c in catalog)
 
     #All total and completed credits should be 120 or above to graduate
-    model.add(total_credits + completed_credits >= 120)
+    model.add(total_credits + completed_credits >= MIN_GRADUATION_CREDITS)
 
     # Creates a mapping of semester (as integers) to sem_credits_{sem} variable
     semester_credit_vars: Dict[int, cp_model.IntVar] = {}
 
     for sem in semester_range:
         sem_credits_expr = sum(course_to_credits[c] * take[(c, sem)] for c in all_courses if c in course_to_credits)
-        sem_credits = model.new_int_var(0, 18, f"sem_credits_{sem}")
+        sem_credits = model.new_int_var(0, MAX_SEMESTER_CREDITS, f"sem_credits_{sem}")
 
         #If scheduled, then sem_credits must equal sem_credits_expr
         model.add(sem_credits == sem_credits_expr)
 
         #Total semester credits must be less than 19
-        model.add(sem_credits <= 18)
+        model.add(sem_credits <= MAX_SEMESTER_CREDITS)
         semester_credit_vars[sem] = sem_credits
 
     return total_credits, completed_credits, semester_credit_vars
@@ -428,10 +569,12 @@ def _add_preference_constraints(
     take: Dict[Tuple[str, int], cp_model.IntVar],
     semester_range: List[int],
 ) -> None:
+    # If a course is preferred, set sum of takes to 1
     for course in preferred:
         if course in all_courses and course not in completed:
             model.add(sum(take[(course, s)] for s in semester_range) == 1)
 
+    # If a course is not preferred, set sum of takes to 0
     for course in avoid:
         if course in all_courses and course not in completed:
             model.add(sum(take[(course, s)] for s in semester_range) == 0)
@@ -443,6 +586,8 @@ def _add_compact_semester_constraints(
     take: Dict[Tuple[str, int], cp_model.IntVar],
     semester_range: List[int],
 ) -> Dict[int, cp_model.IntVar]:
+    
+    # There should be no gaps within semesters
     semester_used = {s: model.new_bool_var(f"semester_used_{s}") for s in semester_range}
     for course in all_courses:
         for sem in semester_range:
@@ -451,5 +596,5 @@ def _add_compact_semester_constraints(
         model.add(semester_used[semester_range[i]] >= semester_used[semester_range[i + 1]])
     return semester_used
 
-def build_constraints(*args: Any, **kwargs: Any) -> Any:
-    raise NotImplementedError("Constraint construction will be moved into this module during optimizer refactoring.")
+
+

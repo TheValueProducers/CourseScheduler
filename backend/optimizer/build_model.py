@@ -1,11 +1,15 @@
 from __future__ import annotations
 
-from typing import Any, Dict, List, Literal, Optional
+from typing import Any, Dict, List, Literal, Optional, Set, Tuple
+
+import services.schedule_service as svc
 
 from ortools.sat.python import cp_model
 
 from optimizer.build_schedule import _build_schedule_result
 from optimizer.constraints import (
+    DISTRIBUTION_REQUIREMENTS,
+    _credit_hours_to_units,
     _add_compact_semester_constraints,
     _add_course_requirement_constraints,
     _add_credit_constraints,
@@ -47,6 +51,7 @@ def _expand_composite_requirements(
             sub_id = f"{req_id}::{sub_id_raw}"
             sub_req_copy = dict(sub_req)
             sub_req_copy["id"] = sub_id
+            sub_req_copy["is_subrequirement"] = True
             expanded.append(sub_req_copy)
             sub_requirement_ids.append(sub_id)
 
@@ -71,61 +76,70 @@ def build_schedule(
     optimization: Literal["balanced", "graduate early"],
 ) -> Dict[str, Any]:
     
+  
+
+
+
     # ==================================================
 
-    # Getting Every 
+    # Initializing CP_SAT model
 
     # ==================================================
 
-
-    from services import schedule_service as svc
-
-    completed = {svc._normalize_course_code(course) for course in completed_courses}
-    preferred = {svc._normalize_course_code(course) for course in preferred_courses}
-    avoid = {svc._normalize_course_code(course) for course in avoid_courses}
-    scheduled = {
-        svc._normalize_course_code(course): int(sem)
-        for course, sem in (scheduled_courses or {}).items()
-        if isinstance(course, str) and course.strip()
-    }
-
-    chosen_degree_normalized = [str(degree).strip().lower() for degree in chosen_degree if str(degree).strip()]
-    degree_requirements = svc._selected_degree_requirements(chosen_degree_normalized)
-    if not degree_requirements:
-        raise ValueError(svc._supported_program_message())
-    expanded_requirements, composite_meta = _expand_composite_requirements(degree_requirements)
-
-    semester_range, base_semester_number = svc._remaining_semester_indices(current_term, year)
     model = cp_model.CpModel()
-
-    distribution_courses, diversity_courses, fwis_courses, lpap_courses = svc._collect_special_course_buckets(catalog)
-
-    # Returns a set of string of all possible candidate courses
-    all_courses = svc._build_candidate_course_pool(
-        expanded_requirements=expanded_requirements,
-        distribution_courses=distribution_courses,
-        diversity_courses=diversity_courses,
-        fwis_courses=fwis_courses,
-        lpap_courses=lpap_courses,
-        preferred=preferred,
-        avoid=avoid,
-        scheduled=scheduled,
-        catalog=catalog,
-    )
     
 
-    svc._validate_scheduled_course_indices(scheduled, catalog)
+    # ==================================================
+
+    # Creating necessary variables
+
+    # ==================================================
+
+    all_courses: Set[str] = set(catalog.keys())
+    completed: Set[str] = set(completed_courses)
+
+    distribution_courses: Dict[str, List[str]] = {
+        dist: sorted(
+            [
+                code
+                for code, course in catalog.items()
+                if getattr(course, "distribution", None) == dist
+            ]
+        )
+        for dist in DISTRIBUTION_REQUIREMENTS.keys()
+    }
+    diversity_courses: List[str] = sorted(
+        [code for code, course in catalog.items() if bool(getattr(course, "analyzing_diversity", False))]
+    )
+    fwis_courses: List[str] = sorted([code for code in all_courses if code.startswith("FWIS")])
+    lpap_courses: List[str] = sorted([code for code in all_courses if code.startswith("LPAP")])
+    
+    # Get remaining semesters
+    semester_range, base_semester_number = svc._remaining_semester_indices(current_term, year)
+
 
     course_to_credits = {
-        course: catalog[course].credit_hours for course in all_courses if catalog[course].credit_hours is not None
+        course: _credit_hours_to_units(catalog[course].credit_hours)
+        for course in all_courses
+        if catalog[course].credit_hours is not None
     }
 
+    degree_requirements = svc._selected_degree_requirements(chosen_degree)
+    expanded_requirements, composite_meta = _expand_composite_requirements(degree_requirements)
+
+
+
+    # ==================================================
+
+    # Creating optimization variables
+
+    # ==================================================
+
+
+    #Take[(course, sem)] = 1 if course is taken in that semester and false if otherwise
     take = _create_take_variables(model, all_courses, semester_range)
 
-    
-
-
-
+   
     req_available, use_for_req = _build_requirement_usage_variables(
         model=model,
         expanded_requirements=expanded_requirements,
@@ -139,9 +153,15 @@ def build_schedule(
     subgroup_satisfied = _build_sub_requirement_variables(model, composite_meta, req_available, use_for_req)
 
 
+    # ==================================================
+
+    # Add Constraints Variables
+
+    # ==================================================
+
     _add_cross_list_constraints(model, catalog, all_courses, completed, take, semester_range)
     _add_single_take_constraints(model, all_courses, completed, take, semester_range)
-    _add_scheduled_course_constraints(model, scheduled, completed, take, base_semester_number, semester_range)
+    _add_scheduled_course_constraints(model, scheduled_courses, completed, take, base_semester_number, semester_range)
 
     _add_requirement_overlap_constraints(model, req_available, use_for_req)
 
@@ -180,9 +200,16 @@ def build_schedule(
         course_to_credits=course_to_credits,
     )
 
-    _add_preference_constraints(model, preferred, avoid, all_courses, completed, take, semester_range)
+    _add_preference_constraints(model, preferred_courses, avoid_courses, all_courses, completed_courses, take, semester_range)
     semester_used = _add_compact_semester_constraints(model, all_courses, take, semester_range)
     required_or_choice = svc._collect_required_or_choice_courses(expanded_requirements)
+
+
+    # ==================================================
+
+    # Set Optimization Objective
+
+    # ==================================================
     _set_schedule_objective(
         model=model,
         optimization=optimization,
@@ -195,6 +222,12 @@ def build_schedule(
         semester_credit_vars=semester_credit_vars,
     )
 
+    # ==================================================
+
+    # Solving the model
+
+    # ==================================================
+
     solver = cp_model.CpSolver()
     solver.parameters.num_search_workers = 8
     status = solver.solve(model)
@@ -206,6 +239,12 @@ def build_schedule(
             "requirements": {},
             "message": "No feasible schedule found with the given constraints.",
         }
+    
+    # ==================================================
+
+    # Build Schedule Results
+
+    # ==================================================
 
     return _build_schedule_result(
         solver=solver,
@@ -213,7 +252,7 @@ def build_schedule(
         semester_range=semester_range,
         all_courses=all_courses,
         base_semester_number=base_semester_number,
-        preferred=preferred,
+        preferred=preferred_courses,
         expanded_requirements=expanded_requirements,
         use_for_req=use_for_req,
         distribution_courses=distribution_courses,

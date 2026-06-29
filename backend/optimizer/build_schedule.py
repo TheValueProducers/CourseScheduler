@@ -44,6 +44,9 @@ def _evaluate_requirement_from_taken(
     taken: Set[str],
     catalog: Dict[str, CourseRecord],
 ) -> Tuple[bool, List[int]]:
+    """
+    Givene the requirements and set of courses that the students have taken, is the requirement satisfied?
+    """
     req_type = req.get("requirement_type")
 
     if req_type == "required_courses":
@@ -51,6 +54,7 @@ def _evaluate_requirement_from_taken(
         total = len(courses)
         count = len([c for c in courses if c in taken])
         return count >= total, [count, total]
+
 
     if req_type == "choose_group":
         satisfied_groups = 0
@@ -86,6 +90,7 @@ def _evaluate_requirement_from_taken(
                 option_courses.extend(_normalize_course_code(c) for c in option)
         satisfying_courses = sorted({c for c in option_courses if c in catalog})
 
+    # Also implicitly handles "choose_n"
     target = int(req.get("min_count", 0))
     count = len([c for c in satisfying_courses if c in taken])
     return count >= target, [min(count, target), target]
@@ -130,7 +135,15 @@ def _build_schedule_result(
     req_available: Dict[str, List[str]],
     completed_credits: int,
 ) -> Dict[str, Any]:
+    
+    """ 
+    Read which courses do CPSAT choose, builds explanation and recomputes requirement progress
+    """
+
     def course_reason(course: str, sem: int) -> str:
+        """
+        Reasons why each course is chosen
+        """
         reasons: List[str] = []
 
         if course in preferred:
@@ -162,7 +175,40 @@ def _build_schedule_result(
 
         return "; ".join(reasons)
 
-    schedule: Dict[str, List[List[str]]] = {}
+    def direct_prereq_taken(course: str, sem: int) -> List[str]:
+        """Return direct (one-layer) prerequisite courses already taken before `sem`."""
+        tree = catalog[course].prereq_tree
+        if not isinstance(tree, dict):
+            return []
+
+        prereq_candidates: List[str] = []
+        if "course" in tree:
+            prereq_candidates.append(_normalize_course_code(tree["course"]))
+        else:
+            for child in tree.get("conditions", []):
+                if isinstance(child, dict) and "course" in child:
+                    prereq_candidates.append(_normalize_course_code(child["course"]))
+
+        if not prereq_candidates:
+            return []
+
+        taken_direct: Set[str] = set()
+        for prereq in prereq_candidates:
+            if prereq in completed:
+                taken_direct.add(prereq)
+                continue
+            if (prereq, 0) in take:
+                for prev_sem in semester_range:
+                    if prev_sem >= sem:
+                        break
+                    if solver.value(take[(prereq, prev_sem)]) == 1:
+                        taken_direct.add(prereq)
+                        break
+
+        return sorted(taken_direct)
+
+    # Map semester to planned courses
+    schedule: Dict[str, List[Dict[str, Any]]] = {}
     planned_courses: Set[str] = set()
 
     for sem in semester_range:
@@ -174,9 +220,16 @@ def _build_schedule_result(
         schedule[label] = []
         for course in sem_courses:
             planned_courses.add(course)
-            schedule[label].append([course, course_reason(course, sem)])
+            prereq_taken = direct_prereq_taken(course, sem)
+            entry = {
+                "class": course,
+                "reason": course_reason(course, sem),
+                "prereqs": prereq_taken,
+            }
+            schedule[label].append(entry)
 
-    completed_and_planned = completed | planned_courses
+    completed_set = set(completed)
+    completed_and_planned = completed_set | planned_courses
 
     requirement_progress: Dict[str, Dict[str, Any]] = {}
 

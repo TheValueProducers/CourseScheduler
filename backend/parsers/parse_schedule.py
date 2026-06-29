@@ -48,7 +48,7 @@ def parse_diversity(raw_text: str) -> bool:
     return bool(match and match.group(1).strip().lower() == "yes")
 
 
-def parse_credit_hours(raw_text: str) -> Optional[int]:
+def parse_credit_hours(raw_text: str) -> Optional[float]:
     if not raw_text:
         return None
     match = re.search(r"Credit Hours:\s*\n(.+)", raw_text)
@@ -56,16 +56,22 @@ def parse_credit_hours(raw_text: str) -> Optional[int]:
         return None
     text = match.group(1).strip()
 
-    if re.fullmatch(r"\d+", text):
-        return int(text)
+    number_pattern = r"\d+(?:\.\d+)?"
 
-    range_match = re.fullmatch(r"(\d+)\s+TO\s+(\d+)", text)
+    if re.fullmatch(number_pattern, text):
+        return float(text)
+
+    range_match = re.fullmatch(fr"({number_pattern})\s+TO\s+({number_pattern})", text)
     if range_match:
-        return int(range_match.group(2))
+        lower = range_match.group(1)
+        upper = range_match.group(2)
+        if "." in lower or "." in upper:
+            return None
+        return float(upper)
 
-    or_match = re.fullmatch(r"(\d+)\s+OR\s+(\d+)", text)
+    or_match = re.fullmatch(fr"({number_pattern})\s+OR\s+({number_pattern})", text)
     if or_match:
-        return max(int(or_match.group(1)), int(or_match.group(2)))
+        return max(float(or_match.group(1)), float(or_match.group(2)))
 
     return None
 

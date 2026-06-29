@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import AdvancedCourseSearch from "../components/AdvancedCourseSearch";
 
 const API_URL = "http://localhost:8000";
 
@@ -102,6 +103,8 @@ function CourseRecommenderRankingPage() {
             Browse Bayesian-ranked courses for D1, D2, D3, diversity, and LPAP based on submitted course reviews.
           </p>
         </header>
+
+        <AdvancedCourseSearch />
 
         <section className="panel">
           <div className="panel-head">

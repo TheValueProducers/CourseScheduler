@@ -64,7 +64,7 @@ class CourseRecord:
     course_number: int
     long_title: Optional[str]
     offered_terms: Set[str]
-    credit_hours: Optional[int]
+    credit_hours: Optional[float]
     distribution: Optional[str]
     analyzing_diversity: bool
     cross_list: List[str]

@@ -6,11 +6,12 @@ from pathlib import Path
 from typing import Any, Dict
 
 from sqlalchemy import Boolean as SA_Boolean
-from sqlalchemy import Column, Integer as SA_Integer, MetaData, String as SA_String, Table, Text as SA_Text, inspect, select
+from sqlalchemy import Column, Integer as SA_Integer, MetaData, String as SA_String, Table, Text as SA_Text, inspect, select, text
+from sqlalchemy import Float as SA_Float
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 from sqlalchemy.sql.type_api import TypeEngine
-from sqlalchemy.types import JSON, Boolean, Integer, String, Text
+from sqlalchemy.types import JSON, Boolean, Float, Integer, String, Text
 
 # Allow running this script directly via: python seeds/seed_courses.py
 BACKEND_ROOT = Path(__file__).resolve().parents[1]
@@ -83,6 +84,12 @@ def _format_value_for_column(value: Any, column_type: TypeEngine[Any]) -> Any:
     if isinstance(column_type, Integer):
         try:
             return int(value)
+        except (TypeError, ValueError):
+            return None
+
+    if isinstance(column_type, Float):
+        try:
+            return float(value)
         except (TypeError, ValueError):
             return None
 
@@ -159,7 +166,7 @@ def _load_courses_table(db_engine: Engine) -> Table:
             Column("course_number", SA_Integer, nullable=False),
             Column("long_title", SA_Text, nullable=True),
             Column("offered_terms", JSON, nullable=True),
-            Column("credit_hours", SA_Integer, nullable=True),
+            Column("credit_hours", SA_Float, nullable=True),
             Column("distribution", SA_String(64), nullable=True),
             Column("analyzing_diversity", SA_Boolean, nullable=False, default=False),
             Column("cross_list", JSON, nullable=True),
@@ -170,7 +177,17 @@ def _load_courses_table(db_engine: Engine) -> Table:
         return courses_table
 
     _stage("found existing 'courses' table")
-    return Table("courses", metadata, autoload_with=db_engine)
+    courses_table = Table("courses", metadata, autoload_with=db_engine)
+
+    credit_hours_column = courses_table.columns.get("credit_hours")
+    if credit_hours_column is not None and isinstance(credit_hours_column.type, Integer):
+        _stage("migrating 'credit_hours' column from integer to float")
+        with db_engine.begin() as conn:
+            conn.execute(text("ALTER TABLE courses ALTER COLUMN credit_hours TYPE DOUBLE PRECISION USING credit_hours::double precision"))
+        metadata = MetaData()
+        courses_table = Table("courses", metadata, autoload_with=db_engine)
+
+    return courses_table
 
 
 def seed_courses() -> Dict[str, int]:

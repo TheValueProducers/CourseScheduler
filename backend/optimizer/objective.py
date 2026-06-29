@@ -1,6 +1,10 @@
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, Dict, List, Set, Tuple, Literal
+
+from ortools.sat.python import cp_model
+
+from optimizer.constraints import CREDIT_UNIT_SCALE
 
 
 
@@ -25,7 +29,7 @@ def _set_schedule_objective(
         )
         return
 
-    min_comfort, max_comfort, max_credits = 0, 16, 18
+    min_comfort, max_comfort, max_credits = 0, 16 * CREDIT_UNIT_SCALE, 18 * CREDIT_UNIT_SCALE
     comfort_penalties = []
     for sem in semester_range:
         sem_credits = semester_credit_vars[sem]

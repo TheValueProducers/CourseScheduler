@@ -29,6 +29,7 @@ PROGRAM_LABEL_OVERRIDES: Dict[str, str] = {
 bs_comp_degree_requirement: List[Dict[str, Any]] = [
 	{
 		"id": "required_core",
+		"is_subrequirement": False,
 		"requirement_type": "required_courses",
 		"courses": [
 			"COMP 140",
@@ -47,6 +48,7 @@ bs_comp_degree_requirement: List[Dict[str, Any]] = [
 	},
 	{
 		"id": "calculus_1",
+		"is_subrequirement": False,
 		"requirement_type": "choose_n",
 		"courses": ["MATH 101", "MATH 105"],
 		"min_count": 1,
@@ -54,6 +56,7 @@ bs_comp_degree_requirement: List[Dict[str, Any]] = [
 	},
 	{
 		"id": "calculus_2",
+		"is_subrequirement": False,
 		"requirement_type": "choose_n",
 		"courses": ["MATH 102", "MATH 106"],
 		"min_count": 1,
@@ -61,6 +64,7 @@ bs_comp_degree_requirement: List[Dict[str, Any]] = [
 	},
 	{
 		"id": "multivariable_calculus",
+		"is_subrequirement": False,
 		"requirement_type": "choose_n",
 		"courses": ["MATH 212", "MATH 222", "MATH 232"],
 		"min_count": 1,
@@ -68,6 +72,7 @@ bs_comp_degree_requirement: List[Dict[str, Any]] = [
 	},
 	{
 		"id": "probability_statistics",
+		"is_subrequirement": False,
 		"requirement_type": "choose_n",
 		"courses": ["ELEC 303", "STAT 310", "STAT 311", "STAT 312", "STAT 315", "DSCI 301"],
 		"min_count": 1,
@@ -75,6 +80,7 @@ bs_comp_degree_requirement: List[Dict[str, Any]] = [
 	},
 	{
 		"id": "linear_algebra",
+		"is_subrequirement": False,
 		"requirement_type": "choose_n",
 		"courses": ["CMOR 302", "CMOR 303", "MATH 221", "MATH 354", "MATH 355"],
 		"min_count": 1,
@@ -82,6 +88,7 @@ bs_comp_degree_requirement: List[Dict[str, Any]] = [
 	},
 	{
 		"id": "design_requirement",
+		"is_subrequirement": False,
 		"requirement_type": "choose_n",
 		"courses": ["COMP 402", "COMP 410", "COMP 413", "COMP 416", "COMP 460", "COMP 461"],
 		"min_count": 1,
@@ -89,6 +96,7 @@ bs_comp_degree_requirement: List[Dict[str, Any]] = [
 	},
 	{
 		"id": "systems",
+		"is_subrequirement": False,
 		"requirement_type": "choose_n",
 		"courses": ["COMP 412", "COMP 421", "COMP 422", "COMP 427", "COMP 429", "COMP 432", "COMP 436", "COMP 458"],
 		"min_count": 1,
@@ -96,6 +104,7 @@ bs_comp_degree_requirement: List[Dict[str, Any]] = [
 	},
 	{
 		"id": "application_domains",
+		"is_subrequirement": False,
 		"requirement_type": "choose_n",
 		"courses": ["COMP 418", "COMP 431", "COMP 440", "COMP 442", "COMP 447", "COMP 450", "COMP 459", "COMP 462", "COMP 471", "COMP 484"],
 		"min_count": 1,
@@ -103,6 +112,7 @@ bs_comp_degree_requirement: List[Dict[str, Any]] = [
 	},
 	{
 		"id": "theory",
+		"is_subrequirement": False,
 		"requirement_type": "choose_n",
 		"courses": ["COMP 409", "COMP 411", "COMP 414", "COMP 423", "COMP 448", "COMP 463", "COMP 475", "COMP 480", "COMP 481"],
 		"min_count": 1,
@@ -110,6 +120,7 @@ bs_comp_degree_requirement: List[Dict[str, Any]] = [
 	},
 	{
 		"id": "comp_electives",
+		"is_subrequirement": False,
 		"requirement_type": "choose_n",
 		"filters": {"subject": "COMP", "min_level": 300},
 		"min_count": 2,
@@ -124,6 +135,7 @@ bs_comp_degree_requirement: List[Dict[str, Any]] = [
 ba_comp_degree_requirement: List[Dict[str, Any]] = [
 	{
 		"id": "required_core",
+		"is_subrequirement": False,
 		"requirement_type": "required_courses",
 		"courses": [
 			"COMP 140",
@@ -141,6 +153,7 @@ ba_comp_degree_requirement: List[Dict[str, Any]] = [
 	},
 	{
 		"id": "calculus_1",
+		"is_subrequirement": False,
 		"requirement_type": "choose_n",
 		"courses": ["MATH 101", "MATH 105"],
 		"min_count": 1,
@@ -148,6 +161,7 @@ ba_comp_degree_requirement: List[Dict[str, Any]] = [
 	},
 	{
 		"id": "calculus_2",
+		"is_subrequirement": False,
 		"requirement_type": "choose_n",
 		"courses": ["MATH 102", "MATH 106"],
 		"min_count": 1,
@@ -155,6 +169,7 @@ ba_comp_degree_requirement: List[Dict[str, Any]] = [
 	},
 	{
 		"id": "multivariable_calculus",
+		"is_subrequirement": False,
 		"requirement_type": "choose_n",
 		"courses": ["MATH 212", "MATH 222", "MATH 232"],
 		"min_count": 1,
@@ -162,6 +177,7 @@ ba_comp_degree_requirement: List[Dict[str, Any]] = [
 	},
 	{
 		"id": "probability_statistics",
+		"is_subrequirement": False,
 		"requirement_type": "choose_n",
 		"courses": ["ELEC 303", "STAT 310", "STAT 311", "STAT 312", "STAT 315", "DSCI 301"],
 		"min_count": 1,
@@ -169,6 +185,7 @@ ba_comp_degree_requirement: List[Dict[str, Any]] = [
 	},
 	{
 		"id": "linear_algebra",
+		"is_subrequirement": False,
 		"requirement_type": "choose_n",
 		"courses": ["CMOR 302", "CMOR 303", "MATH 221", "MATH 354", "MATH 355"],
 		"min_count": 1,
@@ -176,6 +193,7 @@ ba_comp_degree_requirement: List[Dict[str, Any]] = [
 	},
 	{
 		"id": "design_requirement",
+		"is_subrequirement": False,
 		"requirement_type": "choose_n",
 		"courses": ["COMP 402", "COMP 410", "COMP 413", "COMP 416", "COMP 460", "COMP 461"],
 		"min_count": 1,
@@ -183,6 +201,7 @@ ba_comp_degree_requirement: List[Dict[str, Any]] = [
 	},
 	{
 		"id": "comp_electives",
+		"is_subrequirement": False,
 		"requirement_type": "choose_n",
 		"filters": {"subject": "COMP", "min_level": 300},
 		"min_count": 2,
@@ -197,6 +216,7 @@ ba_comp_degree_requirement: List[Dict[str, Any]] = [
 data_science_minor_requirement: List[Dict[str, Any]] = [
     {
         "id": "dsci_minor_prerequisite",
+        "is_subrequirement": False,
         "requirement_type": "choose_n",
         "courses": ["DSCI 101", "COMP 140"],
         "min_count": 1,
@@ -204,6 +224,7 @@ data_science_minor_requirement: List[Dict[str, Any]] = [
     },
     {
         "id": "dsci_minor_statistics",
+        "is_subrequirement": False,
         "requirement_type": "choose_n",
         "courses": [
             "BIOE 439",
@@ -225,6 +246,7 @@ data_science_minor_requirement: List[Dict[str, Any]] = [
     },
     {
         "id": "dsci_minor_big_data",
+        "is_subrequirement": False,
         "requirement_type": "choose_n",
         "courses": ["DSCI 302", "COMP 330", "COMP 430"],
         "min_count": 1,
@@ -232,6 +254,7 @@ data_science_minor_requirement: List[Dict[str, Any]] = [
     },
     {
         "id": "dsci_minor_machine_learning",
+        "is_subrequirement": False,
         "requirement_type": "choose_n",
         "courses": [
             "CMOR 438",
@@ -247,6 +270,7 @@ data_science_minor_requirement: List[Dict[str, Any]] = [
     },
     {
         "id": "dsci_minor_ethics",
+        "is_subrequirement": False,
         "requirement_type": "choose_n",
         "courses": ["DSCI 305", "COMP 301"],
         "min_count": 1,
@@ -254,6 +278,7 @@ data_science_minor_requirement: List[Dict[str, Any]] = [
     },
     {
         "id": "dsci_minor_elective",
+        "is_subrequirement": False,
         "requirement_type": "choose_n",
         "courses": [
             "ASTR 408",
@@ -305,6 +330,7 @@ data_science_minor_requirement: List[Dict[str, Any]] = [
     },
     {
         "id": "dsci_minor_capstone",
+        "is_subrequirement": False,
         "requirement_type": "choose_n",
         "courses": ["DSCI 435", "COMP 449"],
         "min_count": 1,
@@ -315,6 +341,7 @@ data_science_minor_requirement: List[Dict[str, Any]] = [
 statistics_ba_degree_requirement: List[Dict[str, Any]] = [
     {
         "id": "calculus_1",
+        "is_subrequirement": False,
         "requirement_type": "choose_n",
         "courses": ["MATH 101", "MATH 105"],
         "min_count": 1,
@@ -322,6 +349,7 @@ statistics_ba_degree_requirement: List[Dict[str, Any]] = [
     },
     {
         "id": "calculus_2",
+        "is_subrequirement": False,
         "requirement_type": "choose_n",
         "courses": ["MATH 102", "MATH 106"],
         "min_count": 1,
@@ -330,6 +358,7 @@ statistics_ba_degree_requirement: List[Dict[str, Any]] = [
     {
 
         "id": "multivariable_calculus",
+        "is_subrequirement": False,
 
         "requirement_type": "choose_group",
 
@@ -350,6 +379,7 @@ statistics_ba_degree_requirement: List[Dict[str, Any]] = [
     },
     {
         "id": "linear_algebra",
+        "is_subrequirement": False,
         "requirement_type": "choose_n",
         "courses": [
             "CMOR 302",
@@ -362,6 +392,7 @@ statistics_ba_degree_requirement: List[Dict[str, Any]] = [
     },
     {
         "id": "statistical_computation",
+        "is_subrequirement": False,
         "requirement_type": "required_courses",
         "courses": ["STAT 405"],
         "min_count": 1,
@@ -369,6 +400,7 @@ statistics_ba_degree_requirement: List[Dict[str, Any]] = [
     },
     {
         "id": "basic_computing",
+        "is_subrequirement": False,
         "requirement_type": "choose_n",
         "courses": [
             "CMOR 220",
@@ -380,6 +412,7 @@ statistics_ba_degree_requirement: List[Dict[str, Any]] = [
     },
     {
         "id": "advanced_computing",
+        "is_subrequirement": False,
         "requirement_type": "choose_n",
         "courses": [
             "CMOR 360",
@@ -398,6 +431,7 @@ statistics_ba_degree_requirement: List[Dict[str, Any]] = [
     },
     {
         "id": "probability_statistics",
+        "is_subrequirement": False,
         "requirement_type": "choose_n",
         "courses": [
             "STAT 310",
@@ -411,6 +445,7 @@ statistics_ba_degree_requirement: List[Dict[str, Any]] = [
     },
     {
         "id": "linear_regression",
+        "is_subrequirement": False,
         "requirement_type": "required_courses",
         "courses": ["STAT 410"],
         "min_count": 1,
@@ -418,6 +453,7 @@ statistics_ba_degree_requirement: List[Dict[str, Any]] = [
     },
     {
         "id": "stat_electives",
+        "is_subrequirement": False,
         "requirement_type": "choose_n",
         "filters": {
             "subject": "STAT",
@@ -436,6 +472,7 @@ statistics_ba_degree_requirement: List[Dict[str, Any]] = [
     },
     {
         "id": "methodology_theory_requirement",
+        "is_subrequirement": False,
         "requirement_type": "choose_n",
         "courses": [
             "STAT 411",
@@ -456,6 +493,7 @@ statistics_ba_degree_requirement: List[Dict[str, Any]] = [
     },
     {
         "id": "senior_capstone",
+        "is_subrequirement": False,
         "requirement_type": "choose_n",
         "courses": [
             "DSCI 435",
@@ -467,6 +505,7 @@ statistics_ba_degree_requirement: List[Dict[str, Any]] = [
     },
     {
         "id": "approved_outside_elective",
+        "is_subrequirement": False,
         "requirement_type": "choose_n",
         "courses": [
             "CMOR 350",
@@ -510,6 +549,7 @@ statistics_ba_degree_requirement: List[Dict[str, Any]] = [
 statistics_bs_degree_requirement: List[Dict[str, Any]] = [
     {
         "id": "calculus_1",
+        "is_subrequirement": False,
         "requirement_type": "choose_n",
         "courses": ["MATH 101", "MATH 105"],
         "min_count": 1,
@@ -517,6 +557,7 @@ statistics_bs_degree_requirement: List[Dict[str, Any]] = [
     },
     {
         "id": "calculus_2",
+        "is_subrequirement": False,
         "requirement_type": "choose_n",
         "courses": ["MATH 102", "MATH 106"],
         "min_count": 1,
@@ -525,6 +566,7 @@ statistics_bs_degree_requirement: List[Dict[str, Any]] = [
     {
 
         "id": "multivariable_calculus",
+        "is_subrequirement": False,
 
         "requirement_type": "choose_group",
 
@@ -545,6 +587,7 @@ statistics_bs_degree_requirement: List[Dict[str, Any]] = [
     },
     {
         "id": "linear_algebra",
+        "is_subrequirement": False,
         "requirement_type": "choose_n",
         "courses": ["CMOR 302", "CMOR 303", "MATH 355", "MATH 354"],
         "min_count": 1,
@@ -552,6 +595,7 @@ statistics_bs_degree_requirement: List[Dict[str, Any]] = [
     },
     {
         "id": "analysis",
+        "is_subrequirement": False,
         "requirement_type": "choose_n",
         "courses": ["MATH 302", "MATH 321", "MATH 331", "MATH 427"],
         "min_count": 1,
@@ -559,6 +603,7 @@ statistics_bs_degree_requirement: List[Dict[str, Any]] = [
     },
     {
         "id": "statistical_computation",
+        "is_subrequirement": False,
         "requirement_type": "required_courses",
         "courses": ["STAT 405"],
         "min_count": 1,
@@ -566,6 +611,7 @@ statistics_bs_degree_requirement: List[Dict[str, Any]] = [
     },
     {
         "id": "basic_computing",
+        "is_subrequirement": False,
         "requirement_type": "choose_n",
         "courses": ["CMOR 220", "COMP 140", "COMP 182"],
         "min_count": 1,
@@ -573,6 +619,7 @@ statistics_bs_degree_requirement: List[Dict[str, Any]] = [
     },
     {
         "id": "advanced_computing",
+        "is_subrequirement": False,
         "requirement_type": "choose_n",
         "courses": [
             "CMOR 360", "CMOR 422", "CMOR 441", "CMOR 520",
@@ -584,6 +631,7 @@ statistics_bs_degree_requirement: List[Dict[str, Any]] = [
     },
     {
         "id": "probability_statistics",
+        "is_subrequirement": False,
         "requirement_type": "choose_n",
         "courses": ["STAT 310", "ECON 307", "STAT 311", "STAT 315", "DSCI 301"],
         "min_count": 1,
@@ -591,6 +639,7 @@ statistics_bs_degree_requirement: List[Dict[str, Any]] = [
     },
     {
         "id": "linear_regression",
+        "is_subrequirement": False,
         "requirement_type": "required_courses",
         "courses": ["STAT 410"],
         "min_count": 1,
@@ -598,6 +647,7 @@ statistics_bs_degree_requirement: List[Dict[str, Any]] = [
     },
     {
         "id": "probability",
+        "is_subrequirement": False,
         "requirement_type": "required_courses",
         "courses": ["STAT 418"],
         "min_count": 1,
@@ -605,6 +655,7 @@ statistics_bs_degree_requirement: List[Dict[str, Any]] = [
     },
     {
         "id": "statistical_inference",
+        "is_subrequirement": False,
         "requirement_type": "required_courses",
         "courses": ["STAT 419"],
         "min_count": 1,
@@ -612,6 +663,7 @@ statistics_bs_degree_requirement: List[Dict[str, Any]] = [
     },
     {
         "id": "stat_electives",
+        "is_subrequirement": False,
         "requirement_type": "choose_n",
         "filters": {"subject": "STAT", "min_level": 300},
         "min_count": 6,
@@ -621,6 +673,7 @@ statistics_bs_degree_requirement: List[Dict[str, Any]] = [
     },
     {
         "id": "methodology_theory_requirement",
+        "is_subrequirement": False,
         "requirement_type": "choose_n",
         "courses": [
             "STAT 411", "STAT 413", "STAT 421", "STAT 425", "STAT 453",
@@ -633,6 +686,7 @@ statistics_bs_degree_requirement: List[Dict[str, Any]] = [
     },
     {
         "id": "senior_capstone",
+        "is_subrequirement": False,
         "requirement_type": "choose_n",
         "courses": ["DSCI 435", "COMP 449", "STAT 450"],
         "min_count": 1,
@@ -640,6 +694,7 @@ statistics_bs_degree_requirement: List[Dict[str, Any]] = [
     },
     {
         "id": "approved_outside_elective",
+        "is_subrequirement": False,
         "requirement_type": "choose_n",
         "courses": [
             "CMOR 350", "CMOR 360", "CMOR 451", "CMOR 455",
@@ -658,6 +713,7 @@ statistics_bs_degree_requirement: List[Dict[str, Any]] = [
 statistics_minor_track_a_requirement: List[Dict[str, Any]] = [
     {
         "id": "stat_minor_track_a_probability_statistics",
+        "is_subrequirement": False,
         "requirement_type": "choose_n",
         "courses": ["STAT 310", "ECON 307", "STAT 311", "STAT 315", "DSCI 301"],
         "min_count": 1,
@@ -665,6 +721,7 @@ statistics_minor_track_a_requirement: List[Dict[str, Any]] = [
     },
     {
         "id": "stat_minor_track_a_statistical_computation",
+        "is_subrequirement": False,
         "requirement_type": "required_courses",
         "courses": ["STAT 405"],
         "min_count": 1,
@@ -672,6 +729,7 @@ statistics_minor_track_a_requirement: List[Dict[str, Any]] = [
     },
     {
         "id": "stat_minor_track_a_linear_regression",
+        "is_subrequirement": False,
         "requirement_type": "required_courses",
         "courses": ["STAT 410"],
         "min_count": 1,
@@ -679,6 +737,7 @@ statistics_minor_track_a_requirement: List[Dict[str, Any]] = [
     },
     {
         "id": "stat_minor_track_a_electives",
+        "is_subrequirement": False,
         "requirement_type": "choose_n",
         "filters": {"subject": "STAT", "min_level": 300},
         "min_count": 3,
@@ -690,6 +749,7 @@ statistics_minor_track_a_requirement: List[Dict[str, Any]] = [
 statistics_minor_track_b_requirement: List[Dict[str, Any]] = [
     {
         "id": "stat_minor_track_b_intro_statistics",
+        "is_subrequirement": False,
         "requirement_type": "choose_n",
         "courses": ["STAT 280", "STAT 180", "STAT 305"],
         "min_count": 1,
@@ -697,6 +757,7 @@ statistics_minor_track_b_requirement: List[Dict[str, Any]] = [
     },
     {
         "id": "stat_minor_track_b_data_methods",
+        "is_subrequirement": False,
         "requirement_type": "choose_n",
         "courses": ["STAT 385", "DSCI 101"],
         "min_count": 1,
@@ -704,6 +765,7 @@ statistics_minor_track_b_requirement: List[Dict[str, Any]] = [
     },
     {
         "id": "stat_minor_track_b_electives",
+        "is_subrequirement": False,
         "requirement_type": "choose_n",
         "filters": {"subject": "STAT", "min_level": 300},
         "min_count": 4,
@@ -716,6 +778,7 @@ statistics_minor_track_b_requirement: List[Dict[str, Any]] = [
 operations_research_ba_base_requirement: List[Dict[str, Any]] = [
     {
         "id": "or_intro_programming",
+        "is_subrequirement": False,
         "requirement_type": "required_courses",
         "courses": ["COMP 140"],
         "min_count": 1,
@@ -723,6 +786,7 @@ operations_research_ba_base_requirement: List[Dict[str, Any]] = [
     },
     {
         "id": "or_calculus_1",
+        "is_subrequirement": False,
         "requirement_type": "choose_n",
         "courses": ["MATH 101", "MATH 105"],
         "min_count": 1,
@@ -730,6 +794,7 @@ operations_research_ba_base_requirement: List[Dict[str, Any]] = [
     },
     {
         "id": "or_calculus_2",
+        "is_subrequirement": False,
         "requirement_type": "choose_n",
         "courses": ["MATH 102", "MATH 106"],
         "min_count": 1,
@@ -737,6 +802,7 @@ operations_research_ba_base_requirement: List[Dict[str, Any]] = [
     },
     {
         "id": "or_multivariable_calculus",
+        "is_subrequirement": False,
         "requirement_type": "choose_group",
         "options": [
             ["MATH 212"],
@@ -748,6 +814,7 @@ operations_research_ba_base_requirement: List[Dict[str, Any]] = [
     },
     {
         "id": "or_linear_algebra",
+        "is_subrequirement": False,
         "requirement_type": "choose_n",
         "courses": [
             "CMOR 302",
@@ -760,6 +827,7 @@ operations_research_ba_base_requirement: List[Dict[str, Any]] = [
     },
     {
         "id": "or_intermediate_core",
+        "is_subrequirement": False,
         "requirement_type": "required_courses",
         "courses": [
             "CMOR 350",
@@ -770,6 +838,7 @@ operations_research_ba_base_requirement: List[Dict[str, Any]] = [
     },
     {
         "id": "or_machine_learning",
+        "is_subrequirement": False,
         "requirement_type": "choose_n",
         "courses": [
             "ELEC 378",
@@ -780,6 +849,7 @@ operations_research_ba_base_requirement: List[Dict[str, Any]] = [
     },
     {
         "id": "or_probability_statistics",
+        "is_subrequirement": False,
         "requirement_type": "choose_n",
         "courses": [
             "STAT 310",
@@ -793,6 +863,7 @@ operations_research_ba_base_requirement: List[Dict[str, Any]] = [
     },
     {
         "id": "or_advanced_requirement",
+        "is_subrequirement": False,
         "requirement_type": "choose_n",
         "courses": [
             "CMOR 404",
@@ -805,6 +876,7 @@ operations_research_ba_base_requirement: List[Dict[str, Any]] = [
     },
     {
         "id": "or_senior_design",
+        "is_subrequirement": False,
         "requirement_type": "choose_group",
         "options": [
             ["DSCI 435"],
@@ -819,6 +891,7 @@ operations_research_ba_base_requirement: List[Dict[str, Any]] = [
 operations_research_bs_base_requirement: List[Dict[str, Any]] = [
     {
         "id": "or_intro_comp",
+        "is_subrequirement": False,
         "requirement_type": "required_courses",
         "courses": ["COMP 140", "COMP 182", "COMP 215"],
         "min_count": 3,
@@ -826,6 +899,7 @@ operations_research_bs_base_requirement: List[Dict[str, Any]] = [
     },
     {
         "id": "or_calculus_1",
+        "is_subrequirement": False,
         "requirement_type": "choose_n",
         "courses": ["MATH 101", "MATH 105"],
         "min_count": 1,
@@ -833,6 +907,7 @@ operations_research_bs_base_requirement: List[Dict[str, Any]] = [
     },
     {
         "id": "or_calculus_2",
+        "is_subrequirement": False,
         "requirement_type": "choose_n",
         "courses": ["MATH 102", "MATH 106"],
         "min_count": 1,
@@ -840,6 +915,7 @@ operations_research_bs_base_requirement: List[Dict[str, Any]] = [
     },
     {
         "id": "or_multivariable_calculus",
+        "is_subrequirement": False,
         "requirement_type": "choose_group",
         "options": [
             ["MATH 212"],
@@ -851,6 +927,7 @@ operations_research_bs_base_requirement: List[Dict[str, Any]] = [
     },
     {
         "id": "or_intermediate_core",
+        "is_subrequirement": False,
         "requirement_type": "required_courses",
         "courses": ["CMOR 350", "CMOR 360"],
         "min_count": 2,
@@ -858,6 +935,7 @@ operations_research_bs_base_requirement: List[Dict[str, Any]] = [
     },
     {
         "id": "or_analysis",
+        "is_subrequirement": False,
         "requirement_type": "choose_n",
         "courses": ["MATH 302", "MATH 321"],
         "min_count": 1,
@@ -865,6 +943,7 @@ operations_research_bs_base_requirement: List[Dict[str, Any]] = [
     },
     {
         "id": "or_linear_algebra",
+        "is_subrequirement": False,
         "requirement_type": "choose_n",
         "courses": ["CMOR 302", "CMOR 303", "MATH 354", "MATH 355"],
         "min_count": 1,
@@ -872,6 +951,7 @@ operations_research_bs_base_requirement: List[Dict[str, Any]] = [
     },
     {
         "id": "or_probability_statistics",
+        "is_subrequirement": False,
         "requirement_type": "choose_n",
         "courses": ["STAT 310", "ECON 307", "STAT 311", "STAT 315", "DSCI 301"],
         "min_count": 1,
@@ -879,6 +959,7 @@ operations_research_bs_base_requirement: List[Dict[str, Any]] = [
     },
     {
         "id": "or_advanced_core",
+        "is_subrequirement": False,
         "requirement_type": "required_courses",
         "courses": ["CMOR 441", "CMOR 442", "CMOR 451"],
         "min_count": 3,
@@ -886,6 +967,7 @@ operations_research_bs_base_requirement: List[Dict[str, Any]] = [
     },
     {
         "id": "or_senior_design",
+        "is_subrequirement": False,
         "requirement_type": "choose_group",
         "options": [
             ["CMOR 492", "CMOR 493"],
@@ -1031,6 +1113,7 @@ or_theoretical_foundations = [
 
 or_algorithms_specialization = {
     "id": "or_algorithms_specialization",
+    "is_subrequirement": False,
     "requirement_type": "composite",
     "constraints": {
         "min_from_subject": [{"subject": "CMOR", "min_count": 3}]
@@ -1038,6 +1121,7 @@ or_algorithms_specialization = {
     "sub_requirements": [
         {
             "id": "core",
+            "is_subrequirement": True,
             "requirement_type": "choose_n",
             "courses": or_algorithms_core_courses,
             "min_count": 3,
@@ -1045,6 +1129,7 @@ or_algorithms_specialization = {
         },
         {
             "id": "applied_or",
+            "is_subrequirement": True,
             "requirement_type": "choose_n",
             "courses": or_applied_operations_research,
             "min_count": 1,
@@ -1052,6 +1137,7 @@ or_algorithms_specialization = {
         },
         {
             "id": "theoretical_foundations",
+            "is_subrequirement": True,
             "requirement_type": "choose_n",
             "courses": or_theoretical_foundations,
             "min_count": 1,
@@ -1062,6 +1148,7 @@ or_algorithms_specialization = {
 
 or_data_science_specialization = {
     "id": "or_data_science_specialization",
+    "is_subrequirement": False,
     "requirement_type": "composite",
     "constraints": {
         "min_from_subject": [{"subject": "CMOR", "min_count": 3}]
@@ -1069,6 +1156,7 @@ or_data_science_specialization = {
     "sub_requirements": [
         {
             "id": "core",
+            "is_subrequirement": True,
             "requirement_type": "choose_n",
             "courses": or_data_science_core_courses,
             "min_count": 3,
@@ -1076,6 +1164,7 @@ or_data_science_specialization = {
         },
         {
             "id": "applied_or",
+            "is_subrequirement": True,
             "requirement_type": "choose_n",
             "courses": or_applied_operations_research,
             "min_count": 1,
@@ -1083,6 +1172,7 @@ or_data_science_specialization = {
         },
         {
             "id": "theoretical_foundations",
+            "is_subrequirement": True,
             "requirement_type": "choose_n",
             "courses": or_theoretical_foundations,
             "min_count": 1,
@@ -1093,6 +1183,7 @@ or_data_science_specialization = {
 
 or_financial_engineering_specialization = {
     "id": "or_financial_engineering_specialization",
+    "is_subrequirement": False,
     "requirement_type": "composite",
     "constraints": {
         "min_from_subject": [{"subject": "CMOR", "min_count": 3}]
@@ -1100,6 +1191,7 @@ or_financial_engineering_specialization = {
     "sub_requirements": [
         {
             "id": "core",
+            "is_subrequirement": True,
             "requirement_type": "choose_n",
             "courses": or_financial_engineering_core_courses,
             "min_count": 3,
@@ -1107,6 +1199,7 @@ or_financial_engineering_specialization = {
         },
         {
             "id": "theoretical_foundations",
+            "is_subrequirement": True,
             "requirement_type": "choose_n",
             "courses": or_theoretical_foundations,
             "min_count": 1,
@@ -1114,6 +1207,7 @@ or_financial_engineering_specialization = {
         },
         {
             "id": "additional_elective",
+            "is_subrequirement": True,
             "requirement_type": "choose_n",
             "courses": sorted(set(or_theoretical_foundations + or_applied_operations_research)),
             "min_count": 1,
@@ -1124,6 +1218,7 @@ or_financial_engineering_specialization = {
 
 or_foundations_specialization = {
     "id": "or_foundations_specialization",
+    "is_subrequirement": False,
     "requirement_type": "composite",
     "constraints": {
         "min_from_subject": [{"subject": "CMOR", "min_count": 3}]
@@ -1131,6 +1226,7 @@ or_foundations_specialization = {
     "sub_requirements": [
         {
             "id": "core",
+            "is_subrequirement": True,
             "requirement_type": "choose_n",
             "courses": or_foundations_core_courses,
             "min_count": 4,
@@ -1138,6 +1234,7 @@ or_foundations_specialization = {
         },
         {
             "id": "elective",
+            "is_subrequirement": True,
             "requirement_type": "choose_n",
             "courses": sorted(set(or_applied_operations_research + or_theoretical_foundations)),
             "min_count": 1,
@@ -1147,6 +1244,7 @@ or_foundations_specialization = {
 }
 or_supply_chain_specialization = {
     "id": "or_supply_chain_specialization",
+    "is_subrequirement": False,
     "requirement_type": "composite",
     "constraints": {
         "min_from_subject": [{"subject": "CMOR", "min_count": 3}]
@@ -1154,6 +1252,7 @@ or_supply_chain_specialization = {
     "sub_requirements": [
         {
             "id": "core",
+            "is_subrequirement": True,
             "requirement_type": "choose_n",
             "courses": or_supply_chain_core_courses,
             "min_count": 3,
@@ -1161,6 +1260,7 @@ or_supply_chain_specialization = {
         },
         {
             "id": "theoretical_foundations",
+            "is_subrequirement": True,
             "requirement_type": "choose_n",
             "courses": or_theoretical_foundations,
             "min_count": 1,
@@ -1168,6 +1268,7 @@ or_supply_chain_specialization = {
         },
         {
             "id": "additional_elective",
+            "is_subrequirement": True,
             "requirement_type": "choose_n",
             "courses": sorted(set(or_theoretical_foundations + or_applied_operations_research)),
             "min_count": 1,
@@ -1178,6 +1279,7 @@ or_supply_chain_specialization = {
 
 or_breadth_specialization = {
     "id": "or_breadth_specialization",
+    "is_subrequirement": False,
     "requirement_type": "composite",
     "constraints": {
         "min_from_subject": [{"subject": "CMOR", "min_count": 3}]
@@ -1185,6 +1287,7 @@ or_breadth_specialization = {
     "sub_requirements": [
         {
             "id": "applied_or",
+            "is_subrequirement": True,
             "requirement_type": "choose_n",
             "courses": or_applied_operations_research,
             "min_count": 2,
@@ -1192,6 +1295,7 @@ or_breadth_specialization = {
         },
         {
             "id": "theoretical_foundations",
+            "is_subrequirement": True,
             "requirement_type": "choose_n",
             "courses": or_theoretical_foundations,
             "min_count": 2,
@@ -1199,6 +1303,7 @@ or_breadth_specialization = {
         },
         {
             "id": "additional_elective",
+            "is_subrequirement": True,
             "requirement_type": "choose_n",
             "courses": sorted(set(or_applied_operations_research + or_theoretical_foundations)),
             "min_count": 1,
@@ -1237,6 +1342,7 @@ cmor_ba_breadth_requirement = (
 bs_artificial_intelligence_degree_requirement: List[Dict[str, Any]] = [
     {
         "id": "calculus_1",
+        "is_subrequirement": False,
         "requirement_type": "choose_n",
         "courses": ["MATH 101", "MATH 105"],
         "min_count": 1,
@@ -1244,6 +1350,7 @@ bs_artificial_intelligence_degree_requirement: List[Dict[str, Any]] = [
     },
     {
         "id": "calculus_2",
+        "is_subrequirement": False,
         "requirement_type": "choose_n",
         "courses": ["MATH 102", "MATH 106"],
         "min_count": 1,
@@ -1251,6 +1358,7 @@ bs_artificial_intelligence_degree_requirement: List[Dict[str, Any]] = [
     },
     {
         "id": "linear_algebra",
+        "is_subrequirement": False,
         "requirement_type": "choose_n",
         "courses": ["CMOR 302", "CMOR 303", "MATH 221", "MATH 354", "MATH 355"],
         "min_count": 1,
@@ -1258,6 +1366,7 @@ bs_artificial_intelligence_degree_requirement: List[Dict[str, Any]] = [
     },
     {
         "id": "statistics",
+        "is_subrequirement": False,
         "requirement_type": "choose_n",
         "courses": ["STAT 315", "DSCI 301"],
         "min_count": 1,
@@ -1265,6 +1374,7 @@ bs_artificial_intelligence_degree_requirement: List[Dict[str, Any]] = [
     },
     {
         "id": "core_cs",
+        "is_subrequirement": False,
         "requirement_type": "required_courses",
         "courses": ["COMP 140", "COMP 182", "COMP 215", "COMP 222", "COMP 282"],
         "min_count": 5,
@@ -1272,6 +1382,7 @@ bs_artificial_intelligence_degree_requirement: List[Dict[str, Any]] = [
     },
     {
         "id": "core_ai",
+        "is_subrequirement": False,
         "requirement_type": "required_courses",
         "courses": ["COMP 329", "COMP 345", "COMP 346", "COMP 348", "COMP 456", "COMP 457", "PHIL 108", "PSYC 203"],
         "min_count": 8,
@@ -1279,43 +1390,49 @@ bs_artificial_intelligence_degree_requirement: List[Dict[str, Any]] = [
     },
     {
         "id": "ai_electives",
+        "is_subrequirement": False,
         "requirement_type": "composite",
         "min_count": 3,
 
       "sub_requirements": [
         {
             "id": "ai_electives_theory",
+            "is_subrequirement": True,
             "requirement_type": "choose_n",
             "courses": ["COMP 409", "COMP 414", "COMP 480", "COMP 585"],
-            "min_count": 0,
+            "min_count": 1,
             "max_count": 1,
         },
         {
             "id": "ai_electives_cognitive",
+            "is_subrequirement": True,
             "requirement_type": "choose_n",
             "courses": ["PSYC 430", "PSYC 468"],
-            "min_count": 0,
+            "min_count": 1,
             "max_count": 1,
         },
         {
             "id": "ai_electives_knowledge",
+            "is_subrequirement": True,
             "requirement_type": "choose_n",
             "courses": ["COMP 459", "COMP 631"],
-            "min_count": 0,
+            "min_count": 1,
             "max_count": 1,
         },
         {
             "id": "ai_electives_perception",
+            "is_subrequirement": True,
             "requirement_type": "choose_n",
             "courses": ["COMP 447", "ELEC 447", "COMP 484"],
-            "min_count": 0,
+            "min_count": 1,
             "max_count": 1,
         },
         {
             "id": "ai_electives_robotics",
+            "is_subrequirement": True,
             "requirement_type": "choose_n",
             "courses": ["COMP 442", "COMP 450", "ELEC 450", "MECH 450", "COMP 462"],
-            "min_count": 0,
+            "min_count": 1,
             "max_count": 1,
         },
       ]  

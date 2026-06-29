@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Dict, List, Literal
+from typing import Any, Dict, List, Literal
 
 from pydantic import BaseModel, Field
 
@@ -23,7 +23,7 @@ class RequirementStatus(BaseModel):
 
 class ScheduleResponse(BaseModel):
     status: str
-    schedule: Dict[str, List[List[str]]]
+    schedule: Dict[str, List[Dict[str, Any]]]
     requirements: Dict[str, RequirementStatus]
     message: str | None = None
 
