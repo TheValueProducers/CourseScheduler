@@ -4,7 +4,7 @@ import RequirementProgressSection from "../components/RequirementProgressSection
 import ScheduleFlowDiagram from "../components/ScheduleFlowDiagram";
 import SemesterTablesSection from "../components/SemesterTablesSection";
 
-const API_URL = "http://localhost:8000"//"https://coursescheduler-production.up.railway.app";
+const API_URL = "https://coursescheduler-production.up.railway.app";
 
 const SEMESTERS = [
   "Freshman Fall",

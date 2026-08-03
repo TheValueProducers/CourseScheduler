@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import AdvancedCourseSearch from "../components/AdvancedCourseSearch";
 import AdvancedFilter from "../components/AdvancedFilter";
 
-const API_URL = "http://localhost:8000";
+const API_URL = "https://coursescheduler-production.up.railway.app";
 
 const RANKING_METRICS = [
   { key: "workload", label: "Least Workload" },

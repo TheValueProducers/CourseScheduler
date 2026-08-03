@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 
-const API_URL = "http://localhost:8000";
+const API_URL = "https://coursescheduler-production.up.railway.app";
 
 const EVALUATION_SECTIONS = [
   {
