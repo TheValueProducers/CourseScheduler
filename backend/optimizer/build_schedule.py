@@ -197,13 +197,14 @@ def _build_schedule_result(
             if prereq in completed:
                 taken_direct.add(prereq)
                 continue
-            if (prereq, 0) in take:
-                for prev_sem in semester_range:
-                    if prev_sem >= sem:
-                        break
-                    if solver.value(take[(prereq, prev_sem)]) == 1:
-                        taken_direct.add(prereq)
-                        break
+            for prev_sem in semester_range:
+                if prev_sem >= sem:
+                    break
+                if (prereq, prev_sem) not in take:
+                    continue
+                if solver.value(take[(prereq, prev_sem)]) == 1:
+                    taken_direct.add(prereq)
+                    break
 
         return sorted(taken_direct)
 
@@ -212,7 +213,11 @@ def _build_schedule_result(
     planned_courses: Set[str] = set()
 
     for sem in semester_range:
-        sem_courses = [course for course in sorted(all_courses) if solver.value(take[(course, sem)]) == 1]
+        sem_courses = [
+            course
+            for course in sorted(all_courses)
+            if (course, sem) in take and solver.value(take[(course, sem)]) == 1
+        ]
         if not sem_courses:
             continue
 

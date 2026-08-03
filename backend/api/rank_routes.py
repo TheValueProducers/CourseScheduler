@@ -4,7 +4,7 @@ from fastapi import APIRouter, HTTPException
 
 from schemas.course_schema import CourseRecommendationRequest, CourseRecommendationResponse
 from schemas.rank_schema import GroupedCourseRankings
-from services.course_service import get_course_recommendations as get_course_recommendations_service
+from services.course_service import course_filter, get_course_recommendations as get_course_recommendations_service
 from services.ranking_service import get_all_rankings_by_group
 
 router = APIRouter(tags=["rankings"])
@@ -17,6 +17,8 @@ def get_course_recommendations(payload: CourseRecommendationRequest) -> CourseRe
         if not query:
             raise ValueError("Query must not be empty.")
         courses = get_course_recommendations_service(query=query)
+        if payload.filters is not None:
+            courses = course_filter(courses, payload.filters.model_dump(exclude_none=True))
         return CourseRecommendationResponse(courses=courses)
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc

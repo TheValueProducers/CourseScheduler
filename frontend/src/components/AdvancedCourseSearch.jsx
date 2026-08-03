@@ -21,7 +21,7 @@ function buildCatalogUrl(term, crn) {
   return `https://courses.rice.edu/courses/!SWKSCAT.cat?p_action=COURSE&p_term=${mappedTerm}&p_crn=${encodeURIComponent(normalizedCrn)}`;
 }
 
-function AdvancedCourseSearch() {
+function AdvancedCourseSearch({ filters }) {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -44,7 +44,15 @@ function AdvancedCourseSearch() {
       const response = await fetch(`${API_URL}/api/course-recommendations`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ query: trimmed })
+        body: JSON.stringify({
+          query: trimmed,
+          filters: {
+            course_level: filters?.courseLevel,
+            distribution: filters?.distribution ? Number(filters.distribution) : null,
+            analyzing_diversity: Boolean(filters?.analyzingDiversity),
+            subject: filters?.subject?.trim() || null,
+          },
+        })
       });
 
       const data = await response.json();

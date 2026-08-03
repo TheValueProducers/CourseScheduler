@@ -25,7 +25,14 @@ def _set_schedule_objective(
         model.minimize(
             1000 * sum(semester_used[s] for s in semester_range)
             + total_credits
-            + 10 * sum(s * take[(c, s)] for c in required_or_choice if c in all_courses for s in semester_range)
+            + 10
+            * sum(
+                s * take[(c, s)]
+                for c in required_or_choice
+                if c in all_courses
+                for s in semester_range
+                if (c, s) in take
+            )
         )
         return
 
@@ -53,5 +60,11 @@ def _set_schedule_objective(
         1000 * sum(imbalance_penalties)
         + 100 * sum(comfort_penalties)
         + 50 * total_credits
-        + sum(s * take[(c, s)] for c in required_or_choice if c in all_courses for s in semester_range)
+        + sum(
+            s * take[(c, s)]
+            for c in required_or_choice
+            if c in all_courses
+            for s in semester_range
+            if (c, s) in take
+        )
     )

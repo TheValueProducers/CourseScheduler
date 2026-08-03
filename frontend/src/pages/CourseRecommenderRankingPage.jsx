@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import AdvancedCourseSearch from "../components/AdvancedCourseSearch";
+import AdvancedFilter from "../components/AdvancedFilter";
 
 const API_URL = "http://localhost:8000";
 
@@ -42,6 +43,54 @@ const EMPTY_RANKINGS = {
   lpap: {}
 };
 
+const DEFAULT_FILTERS = {
+  courseLevel: [100, 800],
+  distribution: "",
+  analyzingDiversity: false,
+  subject: ""
+};
+
+function parseCourseCode(courseName) {
+  const match = String(courseName || "").trim().toUpperCase().match(/^([A-Z]{2,5})\s+(\d{3})/);
+  if (!match) {
+    return { subject: null, level: null };
+  }
+
+  const courseNumber = Number(match[2]);
+  return {
+    subject: match[1],
+    level: Math.floor(courseNumber / 100) * 100
+  };
+}
+
+function groupMatchesFilters(groupKey, filters) {
+  if (filters.analyzingDiversity) {
+    return groupKey === "diversity";
+  }
+
+  if (!filters.distribution) {
+    return true;
+  }
+
+  return groupKey === `d${filters.distribution}`;
+}
+
+function rowMatchesFilters(row, filters) {
+  const { subject, level } = parseCourseCode(row?.course);
+  const [minLevel, maxLevel] = filters.courseLevel;
+  const normalizedSubject = String(filters.subject || "").trim().toUpperCase();
+
+  if (level !== null && (level < minLevel || level > maxLevel)) {
+    return false;
+  }
+
+  if (normalizedSubject && subject !== normalizedSubject) {
+    return false;
+  }
+
+  return true;
+}
+
 function formatScore(value) {
   if (value === null || value === undefined || Number.isNaN(Number(value))) {
     return "-";
@@ -62,6 +111,8 @@ function CourseRecommenderRankingPage() {
   const [rankings, setRankings] = useState(EMPTY_RANKINGS);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
+  const [draftFilters, setDraftFilters] = useState(DEFAULT_FILTERS);
+  const [appliedFilters, setAppliedFilters] = useState(DEFAULT_FILTERS);
 
   useEffect(() => {
     async function loadRankings() {
@@ -92,6 +143,34 @@ function CourseRecommenderRankingPage() {
     loadRankings();
   }, []);
 
+  const filteredRankings = useMemo(() => {
+    const next = {};
+
+    for (const group of RANKING_GROUPS) {
+      if (!groupMatchesFilters(group.key, appliedFilters)) {
+        next[group.key] = {};
+        continue;
+      }
+
+      next[group.key] = {};
+      for (const metric of RANKING_METRICS) {
+        const rows = rankings[group.key]?.[metric.key] || [];
+        next[group.key][metric.key] = rows.filter((row) => rowMatchesFilters(row, appliedFilters));
+      }
+    }
+
+    return next;
+  }, [appliedFilters, rankings]);
+
+  function handleSaveFilters() {
+    setAppliedFilters(draftFilters);
+  }
+
+  function handleResetFilters() {
+    setDraftFilters(DEFAULT_FILTERS);
+    setAppliedFilters(DEFAULT_FILTERS);
+  }
+
   return (
     <div className="page-shell recommender-shell">
       <div className="hero-glow" />
@@ -104,7 +183,13 @@ function CourseRecommenderRankingPage() {
           </p>
         </header>
 
-        <AdvancedCourseSearch />
+        <AdvancedCourseSearch filters={appliedFilters} />
+        <AdvancedFilter
+          value={draftFilters}
+          onChange={setDraftFilters}
+          onSave={handleSaveFilters}
+          onReset={handleResetFilters}
+        />
 
         <section className="panel">
           <div className="panel-head">
@@ -125,7 +210,7 @@ function CourseRecommenderRankingPage() {
 
                 <div className="ranking-metric-grid">
                   {RANKING_METRICS.map((metric) => {
-                    const rows = rankings[group.key]?.[metric.key] || [];
+                    const rows = filteredRankings[group.key]?.[metric.key] || [];
 
                     return (
                       <section className="ranking-metric-card" key={`${group.key}-${metric.key}`}>

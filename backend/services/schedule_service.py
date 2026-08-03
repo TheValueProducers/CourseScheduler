@@ -403,7 +403,7 @@ def get_program_options() -> List[Dict[str, str]]:
     return get_supported_program_options()
 
 
-def generate_schedule(payload: ScheduleRequest) -> Dict[str, Any]:
+def generate_schedule(payload: ScheduleRequest, deterministic: bool = False) -> Dict[str, Any]:
     with SessionLocal() as db:
         catalog = CourseRepository(db).get_course_catalog()
     return build_schedule(
@@ -416,6 +416,7 @@ def generate_schedule(payload: ScheduleRequest) -> Dict[str, Any]:
         scheduled_courses=payload.scheduled_courses,
         chosen_degree=payload.chosen_degree,
         optimization=payload.optimization,
+        deterministic=deterministic
     )
 
 

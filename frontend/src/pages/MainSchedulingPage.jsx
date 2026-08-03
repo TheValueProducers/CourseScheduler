@@ -1,5 +1,8 @@
 import React, { useEffect, useMemo, useState } from "react";
+import GenerateScheduleSection from "../components/GenerateScheduleSection";
+import RequirementProgressSection from "../components/RequirementProgressSection";
 import ScheduleFlowDiagram from "../components/ScheduleFlowDiagram";
+import SemesterTablesSection from "../components/SemesterTablesSection";
 
 const API_URL = "http://localhost:8000"//"https://coursescheduler-production.up.railway.app";
 
@@ -419,41 +422,6 @@ function MainSchedulingPage() {
     });
   }
 
-  function renderRequirementTable(rows) {
-    return (
-      <div className="req-card">
-        <table>
-          <thead>
-            <tr>
-              <th>Requirement</th>
-              <th>Satisfied</th>
-              <th>Progress</th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.length === 0 ? (
-              <tr>
-                <td colSpan={3} className="empty-row">
-                  No requirements in this mode.
-                </td>
-              </tr>
-            ) : (
-              rows.map((row) => (
-                <tr key={row.requirement}>
-                  <td>{row.requirement}</td>
-                  <td>{row.satisfied ? "Yes" : "No"}</td>
-                  <td>
-                    {row.progress[0]}/{row.progress[1]}
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
-    );
-  }
-
   return (
     <div className="page-shell">
       <div className="hero-glow" />
@@ -516,379 +484,65 @@ function MainSchedulingPage() {
           </ol>
         </section>
 
-        <section className="panel">
-          <div className="panel-head">
-            <h2>Requirement Progress</h2>
-            <button onClick={checkRequirement} disabled={requirementsLoading}>
-              {requirementsLoading ? "Checking..." : "Check Requirements"}
-            </button>
-          </div>
+        <RequirementProgressSection
+          progressOptions={PROGRESS_OPTIONS}
+          selectedProgressStatus={selectedProgressStatus}
+          onSelectProgressStatus={selectProgressStatus}
+          onCheckRequirement={checkRequirement}
+          requirementsLoading={requirementsLoading}
+          requirementsError={requirementsError}
+          requirementRows={requirementRows}
+        />
 
-          <div className="toggle-row">
-            {PROGRESS_OPTIONS.map((status) => (
-              <button
-                key={status}
-                className={selectedProgressStatus === status ? "toggle active" : "toggle"}
-                onClick={() => selectProgressStatus(status)}
-                type="button"
-              >
-                {status}
-              </button>
-            ))}
-          </div>
+        <SemesterTablesSection
+          allCourses={allCourses}
+          semesters={SEMESTERS}
+          highSchool={HIGH_SCHOOL}
+          statusOptions={STATUS_OPTIONS}
+          coursesLoading={coursesLoading}
+          coursesError={coursesError}
+          highSchoolCourses={highSchoolCourses}
+          highSchoolAddState={highSchoolAddState}
+          semesterCourses={semesterCourses}
+          addState={addState}
+          normalizeCode={normalizeCode}
+          onSetHighSchoolOpen={setHighSchoolOpen}
+          onSetHighSchoolQuery={setHighSchoolQuery}
+          onAddCourseToHighSchool={addCourseToHighSchool}
+          onSetHighSchoolCourseStatus={setHighSchoolCourseStatus}
+          onRemoveHighSchoolCourse={removeHighSchoolCourse}
+          onSetAddOpen={setAddOpen}
+          onSetAddQuery={setAddQuery}
+          onAddCourseToSemester={addCourseToSemester}
+          onSetCourseStatus={setCourseStatus}
+          onRemoveCourse={removeCourse}
+        />
 
-          <p className="warning">
-            Warning: Courses may vary each semester. The following courses are planned based on their
-            availability in Fall/Spring 2026. Courses that are offered during the same semester may not be taken
-            concurrently due to conflicting schedules. Courses are balanced by credit hours but might not be in
-            terms of workload.
-          </p>
-
-          {requirementsError && <p className="error">{requirementsError}</p>}
-
-          <div className="req-grid">
-            {renderRequirementTable(requirementRows)}
-          </div>
-        </section>
-
-        <section className="panel">
-          <div className="panel-head">
-            <h2>Semester Tables</h2>
-            <span className="subtle">Please fill in the courses you have taken, plan to take, or passed.</span>
-          </div>
-
-          {coursesLoading && <p>Loading course catalog...</p>}
-          {coursesError && <p className="error">{coursesError}</p>}
-
-          <div className="semester-grid">
-            <article className="semester-card" key={HIGH_SCHOOL}>
-              <div className="semester-head">
-                <h3>{HIGH_SCHOOL}</h3>
-                <button type="button" onClick={() => setHighSchoolOpen(!highSchoolAddState.open)}>
-                  {highSchoolAddState.open ? "Cancel" : "Add Class"}
-                </button>
-              </div>
-
-              {highSchoolAddState.open && (
-                <div className="add-box">
-                  <input
-                    value={highSchoolAddState.query}
-                    onChange={(e) => setHighSchoolQuery(e.target.value)}
-                    placeholder="Search any course by code or title"
-                  />
-                  {highSchoolAddState.query.trim().length > 0 && (
-                    <ul className="search-results">
-                      {allCourses
-                        .filter((course) => {
-                          const query = highSchoolAddState.query.trim().toLowerCase();
-                          const code = normalizeCode(course).toLowerCase();
-                          const title = (course.long_title || "").toLowerCase();
-                          return code.includes(query) || title.includes(query);
-                        })
-                        .slice(0, 8)
-                        .map((course) => (
-                          <li key={`${HIGH_SCHOOL}-${normalizeCode(course)}`}>
-                            <button type="button" onClick={() => addCourseToHighSchool(course)}>
-                              <span>{normalizeCode(course)}</span>
-                              <small>{course.long_title || "Untitled course"}</small>
-                            </button>
-                          </li>
-                        ))}
-                    </ul>
-                  )}
-                </div>
-              )}
-
-              <div className="semester-table-scroll">
-                <table>
-                  <thead>
-                    <tr>
-                      <th>Course</th>
-                      <th>Status</th>
-                      <th>Action</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {highSchoolCourses.length === 0 ? (
-                      <tr>
-                        <td colSpan={3} className="empty-row">
-                          No courses added yet.
-                        </td>
-                      </tr>
-                    ) : (
-                      highSchoolCourses.map((entry) => (
-                        <tr key={entry.id}>
-                          <td>
-                            <div className="course-code">{entry.code}</div>
-                            <div className="course-title">{entry.longTitle}</div>
-                          </td>
-                          <td>
-                            <select value={entry.status} onChange={(e) => setHighSchoolCourseStatus(entry.id, e.target.value)}>
-                              {STATUS_OPTIONS.map((option) => (
-                                <option key={option} value={option}>
-                                  {option}
-                                </option>
-                              ))}
-                            </select>
-                          </td>
-                          <td>
-                            <button type="button" className="danger" onClick={() => removeHighSchoolCourse(entry.id)}>
-                              Remove
-                            </button>
-                          </td>
-                        </tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            </article>
-
-            {SEMESTERS.map((semester) => {
-              const localAddState = addState[semester];
-              const query = (localAddState?.query || "").trim().toLowerCase();
-
-              const candidates =
-                query.length === 0
-                  ? []
-                  : allCourses
-                      .filter((course) => {
-                        const code = normalizeCode(course).toLowerCase();
-                        const title = (course.long_title || "").toLowerCase();
-                        return code.includes(query) || title.includes(query);
-                      })
-                      .slice(0, 8);
-
-              return (
-                <article className="semester-card" key={semester}>
-                  <div className="semester-head">
-                    <h3>{semester}</h3>
-                    <button type="button" onClick={() => setAddOpen(semester, !localAddState.open)}>
-                      {localAddState.open ? "Cancel" : "Add Class"}
-                    </button>
-                  </div>
-
-                  {localAddState.open && (
-                    <div className="add-box">
-                      <input
-                        value={localAddState.query}
-                        onChange={(e) => setAddQuery(semester, e.target.value)}
-                        placeholder="Search by COMP 140 or course title"
-                      />
-                      {query.length > 0 && (
-                        <ul className="search-results">
-                          {candidates.length === 0 ? (
-                            <li className="empty-result">No matches</li>
-                          ) : (
-                            candidates.map((course) => (
-                              <li key={`${semester}-${normalizeCode(course)}`}>
-                                <button type="button" onClick={() => addCourseToSemester(semester, course)}>
-                                  <span>{normalizeCode(course)}</span>
-                                  <small>{course.long_title || "Untitled course"}</small>
-                                </button>
-                              </li>
-                            ))
-                          )}
-                        </ul>
-                      )}
-                    </div>
-                  )}
-
-                  <div className="semester-table-scroll">
-                    <table>
-                      <thead>
-                        <tr>
-                          <th>Course</th>
-                          <th>Status</th>
-                          <th>Action</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {(semesterCourses[semester] || []).length === 0 ? (
-                          <tr>
-                            <td colSpan={3} className="empty-row">
-                              No courses added yet.
-                            </td>
-                          </tr>
-                        ) : (
-                          semesterCourses[semester].map((entry) => (
-                            <tr key={entry.id}>
-                              <td>
-                                <div className="course-code">{entry.code}</div>
-                                <div className="course-title">{entry.longTitle}</div>
-                              </td>
-                              <td>
-                                <select
-                                  value={entry.status}
-                                  onChange={(e) => setCourseStatus(semester, entry.id, e.target.value)}
-                                >
-                                  {STATUS_OPTIONS.map((option) => (
-                                    <option key={option} value={option}>
-                                      {option}
-                                    </option>
-                                  ))}
-                                </select>
-                              </td>
-                              <td>
-                                <button type="button" className="danger" onClick={() => removeCourse(semester, entry.id)}>
-                                  Remove
-                                </button>
-                              </td>
-                            </tr>
-                          ))
-                        )}
-                      </tbody>
-                    </table>
-                  </div>
-                </article>
-              );
-            })}
-          </div>
-        </section>
-
-        <section className="panel">
-          <div className="panel-head">
-            <h2>Generate Schedule</h2>
-            <button type="button" onClick={generateSchedule} disabled={generateLoading} aria-busy={generateLoading}>
-              {generateLoading ? (
-                <span className="loading-inline">
-                  <span className="loading-dot" aria-hidden="true" />
-                  Running...
-                </span>
-              ) : (
-                "Run Scheduler"
-              )}
-            </button>
-          </div>
-
-          <div className="controls-grid">
-            <label className="degree-picker-field">
-              Degree Programs
-              <div className="degree-picker">
-                <input
-                  value={degreeSearch}
-                  onChange={(e) => setDegreeSearch(e.target.value)}
-                  placeholder="Search degree programs"
-                />
-
-                {degreeSearch.trim().length > 0 && (
-                  <ul className="search-results">
-                    {filteredDegreeOptions.length === 0 ? (
-                      <li className="empty-result">No matching degree options</li>
-                    ) : (
-                      filteredDegreeOptions.slice(0, 8).map((degree) => (
-                        <li key={degree.value}>
-                          <button type="button" onClick={() => addDegree(degree.value)}>
-                            <span>{degree.label}</span>
-                            <small>{degree.value}</small>
-                          </button>
-                        </li>
-                      ))
-                    )}
-                  </ul>
-                )}
-
-                <div className="degree-chip-row">
-                  {selectedDegrees.length === 0 ? (
-                    <span className="subtle">No degree selected.</span>
-                  ) : (
-                    selectedDegrees.map((degreeValue) => {
-                      const matched = degreeOptions.find((degree) => degree.value === degreeValue);
-                      const label = matched ? matched.label : degreeValue;
-
-                      return (
-                        <button
-                          key={degreeValue}
-                          type="button"
-                          className="degree-chip"
-                          onClick={() => removeDegree(degreeValue)}
-                          title="Click to remove"
-                        >
-                          {label} x
-                        </button>
-                      );
-                    })
-                  )}
-                </div>
-              </div>
-            </label>
-
-            <label>
-              Preferred Courses (comma separated)
-              <input
-                value={preferredInput}
-                onChange={(e) => setPreferredInput(e.target.value)}
-                placeholder="COMP 341, COMP 449"
-              />
-            </label>
-
-            <label>
-              Avoid Courses (comma separated)
-              <input
-                value={avoidInput}
-                onChange={(e) => setAvoidInput(e.target.value)}
-                placeholder="COMP 414"
-              />
-            </label>
-
-            <label>
-              Current Term
-              <select value={currentTerm} onChange={(e) => setCurrentTerm(e.target.value)}>
-                <option value="Fall">Fall</option>
-                <option value="Spring">Spring</option>
-              </select>
-            </label>
-
-            <label>
-              Year
-              <select value={year} onChange={(e) => setYear(e.target.value)}>
-                <option value="Freshman">Freshman</option>
-                <option value="Sophomore">Sophomore</option>
-                <option value="Junior">Junior</option>
-                <option value="Senior">Senior</option>
-              </select>
-            </label>
-
-            <label>
-              Optimization
-              <select value={optimization} onChange={(e) => setOptimization(e.target.value)}>
-                <option value="balanced">Balanced</option>
-                <option value="graduate early">Graduate Early</option>
-              </select>
-            </label>
-          </div>
-
-          {generateStatus && <p className="success">Scheduler status: {generateStatus}</p>}
-          {generateError && <p className="error">{generateError}</p>}
-
-          <div className="generated-box">
-            <div className="panel-head compact">
-              <h3>Generated Semesters</h3>
-              <button type="button" onClick={applyGeneratedScheduleToTables}>
-                Apply to Semester Tables
-              </button>
-            </div>
-
-            {Object.keys(generatedSchedule).length === 0 ? (
-              <p className="subtle">No generated schedule yet.</p>
-            ) : (
-              Object.entries(generatedSchedule).map(([semester, entries]) => (
-                <div key={semester} className="generated-semester">
-                  <h4>{semester}</h4>
-                  <ul>
-                    {entries.map((entry, idx) => (
-                      <li
-                        key={`${semester}-${typeof entry === "string" ? entry : entry?.class || `entry-${idx}`}-${idx}`}
-                      >
-                        <strong>{typeof entry === "string" ? entry : entry?.class}</strong>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ))
-            )}
-          </div>
-        </section>
+        <GenerateScheduleSection
+          degreeSearch={degreeSearch}
+          filteredDegreeOptions={filteredDegreeOptions}
+          selectedDegrees={selectedDegrees}
+          degreeOptions={degreeOptions}
+          preferredInput={preferredInput}
+          avoidInput={avoidInput}
+          currentTerm={currentTerm}
+          year={year}
+          optimization={optimization}
+          generatedSchedule={generatedSchedule}
+          generateStatus={generateStatus}
+          generateError={generateError}
+          generateLoading={generateLoading}
+          onGenerateSchedule={generateSchedule}
+          onApplyGeneratedScheduleToTables={applyGeneratedScheduleToTables}
+          onSetDegreeSearch={setDegreeSearch}
+          onAddDegree={addDegree}
+          onRemoveDegree={removeDegree}
+          onSetPreferredInput={setPreferredInput}
+          onSetAvoidInput={setAvoidInput}
+          onSetCurrentTerm={setCurrentTerm}
+          onSetYear={setYear}
+          onSetOptimization={setOptimization}
+        />
 
         <section className="panel">
           <div className="panel-head">

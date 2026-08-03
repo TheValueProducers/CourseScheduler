@@ -40,6 +40,14 @@ def _credit_hours_to_units(credit_hours: Optional[float]) -> int:
         raise ValueError(f"Unsupported credit hour value: {credit_hours}")
     return units
 
+
+def _take_var_or_zero(
+    take: Dict[Tuple[str, int], cp_model.IntVar],
+    course: str,
+    sem: int,
+) -> cp_model.IntVar | int:
+    return take.get((course, sem), 0)
+
 def _prereq_satisfied_bool(
     tree: Optional[Dict[str, Any]],
     sem: int,
@@ -88,13 +96,23 @@ def _prereq_satisfied_bool(
             model.add(satisfied == 1)
             return satisfied
 
-        # If course does not exist in schedule
-        if (prereq_course, 0) not in take:
+        # If no variable exists for this prerequisite before sem, it cannot
+        # satisfy this dependency in time.
+        has_prior_take_var = any(
+            (prereq_course, p) in take
+            for p in semester_range
+            if p < sem
+        )
+        if not has_prior_take_var:
             model.add(satisfied == 0)
             return satisfied
         
         # Checks if a course has been taken before
-        taken_before = sum(take[(prereq_course, p)] for p in semester_range if p < sem)
+        taken_before = sum(
+            _take_var_or_zero(take, prereq_course, p)
+            for p in semester_range
+            if p < sem
+        )
         model.add(taken_before >= 1).only_enforce_if(satisfied)
         model.add(taken_before == 0).only_enforce_if(satisfied.Not())
         return satisfied
@@ -265,7 +283,10 @@ def _add_distribution_constraints(
                 # This conditions mean a course can be used to satisfy dist or not
                 # If a course is not taken, it can not be used to satisfy dist
                 # If it is taken, it can be either used to satisfy dist or not
-                model.add(satisfy_dist[(course, dist)] <= sum(take[(course, s)] for s in semester_range))
+                model.add(
+                    satisfy_dist[(course, dist)]
+                    <= sum(_take_var_or_zero(take, course, s) for s in semester_range)
+                )
 
         #The number of completed courses and future courses must be larger than 3
         completed_satisfying = [c for c in valid_courses if c in completed]
@@ -297,7 +318,15 @@ def _add_diversity_constraints(
 ) -> None:
     valid_diversity = [c for c in diversity_courses if c in all_courses]
     if not any(c in completed for c in valid_diversity):
-        model.add(sum(take[(c, s)] for c in valid_diversity if c not in completed for s in semester_range) >= 1)
+        model.add(
+            sum(
+                _take_var_or_zero(take, c, s)
+                for c in valid_diversity
+                if c not in completed
+                for s in semester_range
+            )
+            >= 1
+        )
 
 
 def _add_fwis_constraints(
@@ -309,16 +338,33 @@ def _add_fwis_constraints(
     completed: Set[str],
     fwis_courses: List[str],
 ) -> None:
-    valid_fwis = [c for c in fwis_courses if c in all_courses and c not in completed]
-    freshman_semesters = [s for s in semester_range if (base_semester_number + s) in (0, 1)]
+    valid_fwis = [
+        c for c in fwis_courses
+        if c in all_courses and c not in completed
+    ]
 
+    freshman_semesters = [
+        s for s in semester_range
+        if (base_semester_number + s) in (0, 1)
+    ]
+
+    # FWIS courses may only be taken during freshman semesters.
     for c in valid_fwis:
         for s in semester_range:
             if s not in freshman_semesters:
-                model.add(take[(c, s)] == 0)
+                if (c, s) in take:
+                    model.add(take[(c, s)] == 0)
 
-    if fwis_courses and not any(c in completed for c in fwis_courses) and freshman_semesters:
-        model.add(sum(take[(c, s)] for c in valid_fwis for s in freshman_semesters) == 1)
+    # If FWIS has not already been completed, exactly one FWIS must be taken.
+    if fwis_courses and not any(c in completed for c in fwis_courses):
+        model.add(
+            sum(
+                take[(c, s)]
+                for c in valid_fwis
+                for s in semester_range
+                if (c, s) in take
+            ) == 1
+        )
 
 
 def _add_lpap_constraints(
@@ -331,7 +377,14 @@ def _add_lpap_constraints(
 ) -> None:
     valid_lpap = [c for c in lpap_courses if c in all_courses and c not in completed]
     if lpap_courses and not any(c in completed for c in lpap_courses):
-        model.add(sum(take[(c, s)] for c in valid_lpap for s in semester_range) == 1)
+        model.add(
+            sum(
+                _take_var_or_zero(take, c, s)
+                for c in valid_lpap
+                for s in semester_range
+            )
+            == 1
+        )
 
 
 def _add_general_graduation_constraints(
@@ -376,7 +429,12 @@ def _add_cross_list_constraints(
     # Only one of each group can be taken
     for group in cross_groups:
         completed_count = sum(1 for c in group if c in completed)
-        planned_count = sum(take[(c, s)] for c in group if c not in completed for s in semester_range)
+        planned_count = sum(
+            _take_var_or_zero(take, c, s)
+            for c in group
+            if c not in completed
+            for s in semester_range
+        )
         model.add(completed_count + planned_count <= 1)
 
 
@@ -390,11 +448,17 @@ def _add_single_take_constraints(
     for course in all_courses:
 
         # A course can only be taken once
-        model.add(sum(take[(course, s)] for s in semester_range) <= 1)
+        model.add(
+            sum(_take_var_or_zero(take, course, s) for s in semester_range)
+            <= 1
+        )
 
         #If a course is completed, it can not be taken anymore
         if course in completed:
-            model.add(sum(take[(course, s)] for s in semester_range) == 0)
+            model.add(
+                sum(_take_var_or_zero(take, course, s) for s in semester_range)
+                == 0
+            )
 
 
 def _add_scheduled_course_constraints(
@@ -415,6 +479,11 @@ def _add_scheduled_course_constraints(
         if local_sem not in semester_range:
             raise ValueError(
                 f"Scheduled semester index {absolute_sem} for {course} is outside the remaining planning horizon."
+            )
+
+        if (course, local_sem) not in take:
+            raise ValueError(
+                f"Scheduled course {course} is not offered in semester index {absolute_sem}."
             )
 
         model.add(take[(course, local_sem)] == 1)
@@ -494,7 +563,8 @@ def _add_prerequisite_constraints(
             prereq_ok = _prereq_satisfied_bool(prereq_tree, sem, model, take, completed, semester_range) 
 
             #Take must equal 0 if prereq_ok is 0, else it can be in {0,1}
-            model.add(take[(course, sem)] <= prereq_ok)
+            if (course, sem) in take:
+                model.add(take[(course, sem)] <= prereq_ok)
 
 
 def _add_term_offering_constraints(
@@ -511,7 +581,8 @@ def _add_term_offering_constraints(
         #If not offered, set take variable to 0 for a course in all semesters
         if not offered:
             for sem in semester_range:
-                model.add(take[(course, sem)] == 0)
+                if (course, sem) in take:
+                    model.add(take[(course, sem)] == 0)
             continue
 
         # From base semester, set take[(course, sem)] to 0 based on whether it's not offered in fall or spring
@@ -519,7 +590,8 @@ def _add_term_offering_constraints(
             absolute_sem = base_semester_number + sem
             sem_term = TERM_ORDER[absolute_sem % 2]
             if sem_term not in offered:
-                model.add(take[(course, sem)] == 0)
+                if (course, sem) in take:
+                    model.add(take[(course, sem)] == 0)
 
 
 def _add_credit_constraints(
@@ -533,7 +605,7 @@ def _add_credit_constraints(
 ) -> Tuple[Any, int, Dict[int, cp_model.IntVar]]:
     
     total_credits = sum(
-        course_to_credits[c] * take[(c, s)]
+        course_to_credits[c] * _take_var_or_zero(take, c, s)
         for c in all_courses
         if c in course_to_credits
         for s in semester_range
@@ -547,7 +619,11 @@ def _add_credit_constraints(
     semester_credit_vars: Dict[int, cp_model.IntVar] = {}
 
     for sem in semester_range:
-        sem_credits_expr = sum(course_to_credits[c] * take[(c, sem)] for c in all_courses if c in course_to_credits)
+        sem_credits_expr = sum(
+            course_to_credits[c] * _take_var_or_zero(take, c, sem)
+            for c in all_courses
+            if c in course_to_credits
+        )
         sem_credits = model.new_int_var(0, MAX_SEMESTER_CREDITS, f"sem_credits_{sem}")
 
         #If scheduled, then sem_credits must equal sem_credits_expr
@@ -572,12 +648,18 @@ def _add_preference_constraints(
     # If a course is preferred, set sum of takes to 1
     for course in preferred:
         if course in all_courses and course not in completed:
-            model.add(sum(take[(course, s)] for s in semester_range) == 1)
+            model.add(
+                sum(_take_var_or_zero(take, course, s) for s in semester_range)
+                == 1
+            )
 
     # If a course is not preferred, set sum of takes to 0
     for course in avoid:
         if course in all_courses and course not in completed:
-            model.add(sum(take[(course, s)] for s in semester_range) == 0)
+            model.add(
+                sum(_take_var_or_zero(take, course, s) for s in semester_range)
+                == 0
+            )
 
 
 def _add_compact_semester_constraints(
@@ -591,7 +673,8 @@ def _add_compact_semester_constraints(
     semester_used = {s: model.new_bool_var(f"semester_used_{s}") for s in semester_range}
     for course in all_courses:
         for sem in semester_range:
-            model.add(take[(course, sem)] <= semester_used[sem])
+            if (course, sem) in take:
+                model.add(take[(course, sem)] <= semester_used[sem])
     for i in range(len(semester_range) - 1):
         model.add(semester_used[semester_range[i]] >= semester_used[semester_range[i + 1]])
     return semester_used

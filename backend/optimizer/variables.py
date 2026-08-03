@@ -1,27 +1,49 @@
 from __future__ import annotations
 
-from typing import Any
+from typing import TYPE_CHECKING, Any, Dict, List, Set, Tuple
 from ortools.sat.python import cp_model
 from parsers.parse_schedule import (
     normalize_course_code,
 )
 from optimizer.build_schedule import _course_matches_filter
+from optimizer.constraints import TERM_ORDER
+
+if TYPE_CHECKING:
+    from services.schedule_service import CourseRecord
 
 _normalize_course_code = normalize_course_code
 
 def _create_take_variables(
     model: cp_model.CpModel,
-    all_courses: Set[str],
+    fall_spring_to_courses: List[List[str]],
     semester_range: List[int],
+    base_semester_number: int,
 ) -> Dict[Tuple[str, int], cp_model.IntVar]:
     
     """
-    Create a mapping of [(course, sem)] to optimization variable for every course in every semester
+    Create take variables only for (course, semester) pairs where the course is
+    offered in that semester term.
+
+    fall_spring_to_courses[0] holds Fall courses.
+    fall_spring_to_courses[1] holds Spring courses.
     """
     take: Dict[Tuple[str, int], cp_model.IntVar] = {}
+    fall_courses = set(fall_spring_to_courses[0]) if len(fall_spring_to_courses) > 0 else set()
+    spring_courses = set(fall_spring_to_courses[1]) if len(fall_spring_to_courses) > 1 else set()
+    all_courses = fall_courses | spring_courses
+
     for course in all_courses:
         for sem in semester_range:
-            take[(course, sem)] = model.new_bool_var(f"take_{course.replace(' ', '_')}_{sem}")
+            absolute_semester = base_semester_number + sem
+            semester_term = TERM_ORDER[absolute_semester % 2]
+            if semester_term == "Fall" and course not in fall_courses:
+                continue
+            if semester_term == "Spring" and course not in spring_courses:
+                continue
+
+            take[(course, sem)] = model.new_bool_var(
+                f"take_{course.replace(' ', '_')}_{sem}"
+            )
     return take
 
 
@@ -32,7 +54,7 @@ def _build_requirement_usage_variables(
     completed: Set[str],
     catalog: Dict[str, CourseRecord],
     take: Dict[Tuple[str, int], cp_model.IntVar],
-    semester_range: List[int],
+    semester_range: List[int], #Change semester range into [0: courses offered in fall, 1: courses offered in spring]
 ) -> Tuple[Dict[str, List[str]], Dict[Tuple[str, str], cp_model.IntVar]]:
     
     """
@@ -80,7 +102,7 @@ def _build_requirement_usage_variables(
             if course not in completed:
 
                 # You can not use this course in requirement if not taken in any semester
-                model.add(var <= sum(take[(course, s)] for s in semester_range))
+                model.add(var <= sum(take.get((course, s), 0) for s in semester_range))
 
     return req_available, use_for_req
 

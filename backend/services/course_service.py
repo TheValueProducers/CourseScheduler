@@ -5,10 +5,132 @@ import os
 import re
 from pathlib import Path
 from functools import lru_cache
-from typing import Dict, List
+from typing import Any, Dict, List
 
 import numpy as np
 import voyageai
+
+
+def _get_course_field(course: object, field_name: str) -> Any:
+	if isinstance(course, dict):
+		return course.get(field_name)
+	return getattr(course, field_name, None)
+
+
+def _normalize_distribution_value(value: Any) -> int | None:
+	if value in (None, ""):
+		return None
+	if isinstance(value, int):
+		return value if value in {1, 2, 3} else None
+
+	normalized = str(value).strip().upper()
+	if not normalized:
+		return None
+
+	if normalized in {"1", "D1", "DISTRIBUTION 1", "DISTRIBUTION I", "GROUP 1", "GROUP I"}:
+		return 1
+	if normalized in {"2", "D2", "DISTRIBUTION 2", "DISTRIBUTION II", "GROUP 2", "GROUP II"}:
+		return 2
+	if normalized in {"3", "D3", "DISTRIBUTION 3", "DISTRIBUTION III", "GROUP 3", "GROUP III"}:
+		return 3
+
+	match = re.search(r"\b([123])\b", normalized)
+	if match:
+		return int(match.group(1))
+
+	roman_match = re.search(r"\b(III|II|I)\b", normalized)
+	if roman_match:
+		return {"I": 1, "II": 2, "III": 3}[roman_match.group(1)]
+
+	return None
+
+
+def _normalize_course_code_value(course: object) -> str | None:
+	code = _get_course_field(course, "course_code") or _get_course_field(course, "code") or _get_course_field(course, "course")
+	if code not in (None, ""):
+		return " ".join(str(code).upper().split())
+
+	subject = _get_course_field(course, "subject")
+	course_number = _get_course_field(course, "course_number")
+	if subject in (None, "") or course_number in (None, ""):
+		return None
+
+	try:
+		number = int(course_number)
+	except (TypeError, ValueError):
+		return None
+
+	return f"{str(subject).upper()} {number:03d}"
+
+
+def _normalize_subject_value(course: object) -> str | None:
+	subject = _get_course_field(course, "subject")
+	if subject not in (None, ""):
+		return str(subject).upper().strip()
+
+	course_code = _normalize_course_code_value(course)
+	if not course_code:
+		return None
+
+	return course_code.split(" ", 1)[0]
+
+
+def _normalize_bool_value(value: Any) -> bool:
+	if isinstance(value, bool):
+		return value
+	if isinstance(value, str):
+		return value.strip().lower() in {"true", "1", "yes", "y"}
+	return bool(value)
+
+
+def course_filter(courses: List[object], filters: Dict[str, Any]) -> List[object]:
+	filtered_courses: List[object] = []
+
+	raw_course_level = filters.get("course_level")
+	course_level: tuple[int, int] | None = None
+	if isinstance(raw_course_level, (list, tuple)) and len(raw_course_level) == 2:
+		try:
+			course_level = (int(raw_course_level[0]), int(raw_course_level[1]))
+		except (TypeError, ValueError):
+			course_level = None
+
+	distribution_filter = _normalize_distribution_value(filters.get("distribution"))
+	diversity_filter = filters.get("analyzing_diversity")
+	subject_filter = filters.get("subject")
+	if subject_filter not in (None, ""):
+		subject_filter = str(subject_filter).upper().strip()
+
+	for course in courses:
+		course_number = _get_course_field(course, "course_number")
+		if course_level is not None:
+			try:
+				number = int(course_number)
+			except (TypeError, ValueError):
+				continue
+			level_bucket = (number // 100) * 100
+			if not (course_level[0] <= level_bucket <= course_level[1]):
+				continue
+
+		if distribution_filter is not None:
+			course_distribution = _normalize_distribution_value(
+				_get_course_field(course, "distribution") or _get_course_field(course, "distribution_group")
+			)
+			if course_distribution != distribution_filter:
+				continue
+
+		if diversity_filter is not None:
+			course_diversity = _normalize_bool_value(_get_course_field(course, "analyzing_diversity"))
+			if course_diversity != _normalize_bool_value(diversity_filter):
+				continue
+
+		if subject_filter is not None:
+			course_subject = _normalize_subject_value(course)
+			if course_subject != subject_filter:
+				continue
+
+		filtered_courses.append(course)
+
+	return filtered_courses
 
 
 def _read_env_file(path: Path) -> dict[str, str]:
@@ -230,12 +352,19 @@ def build_recommendation_records(rows: List[Dict[str, object]]) -> List[Dict[str
 		description = str(parsed.get("description") or "No description")
 		prereqs = str(parsed.get("prerequisites") or "None")
 		recommended = str(parsed.get("recommended_prerequisites") or "None")
+		distribution_group = parsed.get("distribution_group")
+		analyzing_diversity = "ANALYZING DIVERSITY" in str(distribution_group or "").upper()
 
 		records.append(
 			{
 				"course": course_code,
+				"subject": parsed.get("subject"),
+				"course_number": int(parsed.get("course_number")) if parsed.get("course_number") not in (None, "") else None,
 				"term": term,
 				"crn": crn,
+				"distribution_group": distribution_group,
+				"analyzing_diversity": analyzing_diversity,
+				"description": description,
 				"text": (
 					f"{course_code}: {long_title}. Description: {description}. "
 					f"Prerequisites: {prereqs}. Recommended prerequisites: {recommended}."
@@ -357,8 +486,13 @@ def run_voyage_model(
 		recommendations.append(
 			{
 				"course": course_code,
+				"subject": record.get("subject"),
+				"course_number": record.get("course_number"),
 				"term": record.get("term"),
 				"crn": record.get("crn"),
+				"distribution_group": record.get("distribution_group"),
+				"analyzing_diversity": record.get("analyzing_diversity"),
+				"description": record.get("description"),
 			}
 		)
 		if len(recommendations) >= max(1, min(top_k, len(records))):
