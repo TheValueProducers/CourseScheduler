@@ -427,7 +427,7 @@ function MainSchedulingPage() {
       <div className="hero-glow" />
       <main className="layout">
         <header className="hero">
-          <p className="eyebrow">Rice CS Degree Planner</p>
+          <p className="eyebrow">Rice Degree Planner</p>
           <h1>Main Scheduling Page</h1>
           <p>
             Track progress, classify your courses, and generate a semester-by-semester plan from your current

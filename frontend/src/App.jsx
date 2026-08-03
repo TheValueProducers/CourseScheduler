@@ -16,8 +16,7 @@ function App() {
     <div className="app-frame">
       <nav className="top-nav" aria-label="Page navigation">
         <div className="top-nav-brand">
-          <span className="eyebrow">Rice CS Planner</span>
-          <strong>Course Tools</strong>
+          <strong>Rice Course Scheduler &amp; Tools</strong>
         </div>
 
         <div className="top-nav-links">

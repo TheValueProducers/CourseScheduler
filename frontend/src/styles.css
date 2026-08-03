@@ -1,13 +1,13 @@
 :root {
-  --bg: #07131f;
-  --panel: #102237;
-  --panel-2: #0d1d2f;
-  --ink: #eaf4ff;
-  --muted: #9cb8d4;
-  --line: #24425f;
-  --accent: #2ad3b3;
-  --accent-2: #ffcf5a;
-  --danger: #ff6b6b;
+  --bg: #ffffff;
+  --panel: #ffffff;
+  --panel-2: #ffffff;
+  --ink: #111111;
+  --muted: #666666;
+  --line: #d0d0d0;
+  --accent: #2d6cdf;
+  --accent-2: #f2f2f2;
+  --danger: #c62828;
 }
 
 * {
@@ -16,12 +16,9 @@
 
 body {
   margin: 0;
-  font-family: "Space Grotesk", sans-serif;
+  font-family: Arial, sans-serif;
   color: var(--ink);
-  background:
-    radial-gradient(circle at 10% 10%, #1b4c78 0%, transparent 30%),
-    radial-gradient(circle at 90% 0%, #194d42 0%, transparent 28%),
-    linear-gradient(180deg, #06111b 0%, #081726 50%, #06111b 100%);
+  background: #e0e0e0;
   min-height: 100vh;
 }
 
@@ -38,9 +35,9 @@ body {
   align-items: center;
   gap: 1rem;
   padding: 0.9rem 1.2rem;
-  border-bottom: 1px solid rgb(36 66 95 / 75%);
-  background: rgb(7 19 31 / 88%);
-  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--line);
+  background: #0b2a4a;
+  backdrop-filter: none;
 }
 
 .top-nav-brand {
@@ -50,6 +47,7 @@ body {
 
 .top-nav-brand strong {
   letter-spacing: 0.02em;
+  color: #ffffff;
 }
 
 .top-nav-links {
@@ -59,12 +57,12 @@ body {
 }
 
 .nav-tab {
-  background: #132840;
+  background: #f3f3f3;
 }
 
 .nav-tab.active {
-  background: linear-gradient(120deg, #1e8571, #13584c);
-  border-color: #31c9ad;
+  background: #e7e7e7;
+  border-color: #bcbcbc;
 }
 
 .page-shell {
@@ -74,15 +72,7 @@ body {
 }
 
 .hero-glow {
-  position: absolute;
-  width: 40rem;
-  height: 40rem;
-  border-radius: 999px;
-  background: radial-gradient(circle, rgb(42 211 179 / 22%) 0%, rgb(42 211 179 / 0%) 70%);
-  top: -15rem;
-  right: -10rem;
-  pointer-events: none;
-  animation: drift 8s ease-in-out infinite alternate;
+  display: none;
 }
 
 @keyframes drift {
@@ -121,17 +111,17 @@ body {
 .eyebrow {
   text-transform: uppercase;
   font-family: "IBM Plex Mono", monospace;
-  color: var(--accent-2);
+  color: #666666;
   letter-spacing: 0.1em;
   font-size: 0.78rem;
 }
 
 .panel {
-  background: linear-gradient(180deg, rgb(16 34 55 / 90%), rgb(11 27 44 / 92%));
+  background: #ffffff;
   border: 1px solid var(--line);
-  border-radius: 14px;
+  border-radius: 0;
   padding: 1rem;
-  backdrop-filter: blur(6px);
+  backdrop-filter: none;
 }
 
 .panel-head {
@@ -160,28 +150,27 @@ input {
 
 button {
   border: 1px solid var(--line);
-  background: #12314a;
+  background: #f2f2f2;
   color: var(--ink);
   padding: 0.48rem 0.7rem;
-  border-radius: 8px;
+  border-radius: 0;
   cursor: pointer;
-  transition: transform 0.18s ease, border-color 0.18s ease, background-color 0.18s ease;
+  transition: border-color 0.18s ease, background-color 0.18s ease;
 }
 
 button:hover {
-  transform: translateY(-1px);
-  border-color: var(--accent);
+  border-color: #bcbcbc;
+  background: #e9e9e9;
 }
 
 button:disabled {
   cursor: wait;
   opacity: 0.72;
-  transform: none;
 }
 
 button:disabled:hover {
-  transform: none;
   border-color: var(--line);
+  background: #f2f2f2;
 }
 
 .loading-inline {
@@ -214,12 +203,12 @@ button:disabled:hover {
 
 .toggle {
   text-transform: capitalize;
-  background: #132840;
+  background: #f3f3f3;
 }
 
 .toggle.active {
-  background: linear-gradient(120deg, #1e8571, #13584c);
-  border-color: #31c9ad;
+  background: #e7e7e7;
+  border-color: #bcbcbc;
 }
 
 .advanced-search-panel {
@@ -236,7 +225,7 @@ button:disabled:hover {
 .advanced-search-results {
   margin-top: 0.8rem;
   border: 1px solid var(--line);
-  border-radius: 10px;
+  border-radius: 0;
   background: var(--panel-2);
   min-height: 4rem;
   padding: 0.75rem;
@@ -251,10 +240,10 @@ button:disabled:hover {
 }
 
 .advanced-search-result-list li {
-  border: 1px solid rgb(36 66 95 / 60%);
-  border-radius: 8px;
+  border: 1px solid var(--line);
+  border-radius: 0;
   padding: 0.65rem 0.75rem;
-  background: #0b2439;
+  background: #ffffff;
 }
 
 .advanced-search-course {
@@ -263,9 +252,9 @@ button:disabled:hover {
 }
 
 .advanced-search-course-link {
-  color: #eaf4ff;
+  color: #1a1a1a;
   text-decoration: underline;
-  text-decoration-color: rgb(42 211 179 / 60%);
+  text-decoration-color: #bcbcbc;
   text-underline-offset: 0.16rem;
 }
 
@@ -290,7 +279,7 @@ button:disabled:hover {
 }
 
 .advanced-filter-field span {
-  color: #c9e3fd;
+  color: #444444;
   font-size: 0.9rem;
 }
 
@@ -315,13 +304,13 @@ button:disabled:hover {
 .advanced-filter-slider-track {
   inset: 50% 0 auto 0;
   transform: translateY(-50%);
-  background: rgb(36 66 95 / 90%);
+  background: #d8d8d8;
 }
 
 .advanced-filter-slider-active {
   top: 50%;
   transform: translateY(-50%);
-  background: linear-gradient(90deg, var(--accent), #77f5df);
+  background: #8cb1ea;
 }
 
 .advanced-filter-slider-input {
@@ -340,10 +329,10 @@ button:disabled:hover {
   appearance: none;
   width: 1rem;
   height: 1rem;
-  border-radius: 999px;
+  border-radius: 0;
   background: var(--accent-2);
-  border: 2px solid #0d1d2f;
-  box-shadow: 0 0 0 2px rgb(255 207 90 / 20%);
+  border: 1px solid #bcbcbc;
+  box-shadow: none;
   cursor: pointer;
   pointer-events: auto;
 }
@@ -351,10 +340,10 @@ button:disabled:hover {
 .advanced-filter-slider-input::-moz-range-thumb {
   width: 1rem;
   height: 1rem;
-  border-radius: 999px;
+  border-radius: 0;
   background: var(--accent-2);
-  border: 2px solid #0d1d2f;
-  box-shadow: 0 0 0 2px rgb(255 207 90 / 20%);
+  border: 1px solid #bcbcbc;
+  box-shadow: none;
   cursor: pointer;
   pointer-events: auto;
 }
@@ -379,7 +368,7 @@ button:disabled:hover {
   display: flex;
   align-items: center;
   gap: 0.7rem;
-  color: #c9e3fd;
+  color: #444444;
 }
 
 .advanced-filter-checkbox input {
@@ -394,16 +383,16 @@ button:disabled:hover {
 }
 
 .secondary-button {
-  background: #0e2438;
+  background: #f2f2f2;
 }
 
 .warning {
   font-size: 0.92rem;
-  color: #f8d896;
-  background: rgb(255 207 90 / 8%);
-  border-left: 3px solid var(--accent-2);
+  color: #7a5c00;
+  background: #fff8e1;
+  border-left: 3px solid #caa338;
   padding: 0.65rem 0.75rem;
-  border-radius: 8px;
+  border-radius: 0;
 }
 
 .req-grid {
@@ -416,7 +405,7 @@ button:disabled:hover {
 .req-card {
   border: 1px solid var(--line);
   background: var(--panel-2);
-  border-radius: 10px;
+  border-radius: 0;
   padding: 0.7rem;
 }
 
@@ -427,7 +416,7 @@ table {
 
 th,
 td {
-  border-bottom: 1px solid rgb(36 66 95 / 60%);
+  border-bottom: 1px solid #e2e2e2;
   padding: 0.5rem 0.35rem;
   text-align: left;
   vertical-align: top;
@@ -435,7 +424,7 @@ td {
 }
 
 th {
-  color: #c9e3fd;
+  color: #333333;
   font-weight: 600;
 }
 
@@ -450,19 +439,19 @@ th {
 }
 
 .error {
-  color: #ffc6c6;
-  background: rgb(255 107 107 / 12%);
+  color: #7d1a1a;
+  background: #fdecec;
   border-left: 3px solid var(--danger);
   padding: 0.45rem 0.6rem;
-  border-radius: 8px;
+  border-radius: 0;
 }
 
 .success {
-  color: #baf9ec;
-  background: rgb(42 211 179 / 10%);
-  border-left: 3px solid var(--accent);
+  color: #1b5e20;
+  background: #edf7ed;
+  border-left: 3px solid #4caf50;
   padding: 0.45rem 0.6rem;
-  border-radius: 8px;
+  border-radius: 0;
 }
 
 .semester-grid {
@@ -473,10 +462,10 @@ th {
 
 .semester-card {
   border: 1px solid var(--line);
-  border-radius: 10px;
-  background: #0d1b2c;
+  border-radius: 0;
+  background: #ffffff;
   padding: 0.7rem;
-  animation: reveal 0.25s ease;
+  animation: none;
 }
 
 @keyframes reveal {
@@ -504,10 +493,10 @@ th {
 input,
 select {
   width: 100%;
-  background: #0b2439;
+  background: #ffffff;
   color: var(--ink);
   border: 1px solid var(--line);
-  border-radius: 8px;
+  border-radius: 0;
   padding: 0.5rem 0.55rem;
 }
 
@@ -516,7 +505,7 @@ select {
   margin: 0.45rem 0 0;
   padding: 0;
   border: 1px solid var(--line);
-  border-radius: 8px;
+  border-radius: 0;
   overflow: hidden;
 }
 
@@ -529,7 +518,7 @@ select {
   border: 0;
   border-radius: 0;
   text-align: left;
-  background: #0a1c2d;
+  background: #ffffff;
   padding: 0.5rem 0.6rem;
 }
 
@@ -549,7 +538,7 @@ select {
 
 .course-code {
   font-family: "IBM Plex Mono", monospace;
-  color: #e8fbff;
+  color: #1a1a1a;
 }
 
 .course-title {
@@ -567,8 +556,8 @@ select {
 }
 
 .danger {
-  background: #3f1b24;
-  border-color: #6a2f3e;
+  background: #fdecec;
+  border-color: #c62828;
 }
 
 .controls-grid {
@@ -585,7 +574,7 @@ select {
 }
 
 .instruction-list li {
-  color: #d9ebff;
+  color: #333333;
 }
 
 .instruction-list ul {
@@ -615,8 +604,8 @@ select {
 }
 
 .degree-chip {
-  background: #17364f;
-  border-color: #2b5c83;
+  background: #f3f3f3;
+  border-color: #d0d0d0;
   padding: 0.36rem 0.58rem;
 }
 
@@ -629,14 +618,14 @@ label {
 .generated-box {
   margin-top: 0.9rem;
   border: 1px solid var(--line);
-  border-radius: 10px;
+  border-radius: 0;
   padding: 0.7rem;
-  background: #0c2237;
+  background: #ffffff;
 }
 
 .generated-semester + .generated-semester {
   margin-top: 0.6rem;
-  border-top: 1px solid rgb(36 66 95 / 60%);
+  border-top: 1px solid #e2e2e2;
   padding-top: 0.6rem;
 }
 
@@ -648,7 +637,7 @@ label {
 }
 
 .generated-semester li {
-  color: #d9ebff;
+  color: #333333;
   display: grid;
   gap: 0.1rem;
 }
@@ -687,8 +676,8 @@ label {
   gap: 1rem;
   padding: 0.85rem 0.95rem;
   border: 1px solid var(--line);
-  border-radius: 12px;
-  background: #0a1c2d;
+  border-radius: 0;
+  background: #ffffff;
 }
 
 .evaluation-grid {
@@ -699,8 +688,8 @@ label {
 
 .evaluation-card {
   border: 1px solid var(--line);
-  border-radius: 12px;
-  background: #0d1b2c;
+  border-radius: 0;
+  background: #ffffff;
   padding: 0.9rem;
   display: grid;
   gap: 0.8rem;
@@ -718,7 +707,7 @@ label {
 
 .evaluation-card-head p {
   margin: 0;
-  color: var(--muted);
+  color: #000000;
   font-size: 0.92rem;
 }
 
@@ -731,18 +720,18 @@ label {
 .star-button {
   border: 0;
   background: transparent;
-  color: #5f7f9d;
+  color: #999999;
   font-size: 1.5rem;
   line-height: 1;
   padding: 0.05rem;
-  border-radius: 4px;
+  border-radius: 0;
   transition: color 0.15s ease, transform 0.15s ease;
 }
 
 .star-button:hover,
 .star-button:focus-visible {
-  transform: translateY(-1px) scale(1.02);
-  color: #9eb8d0;
+  transform: none;
+  color: #666666;
 }
 
 .star-button.filled {
@@ -764,7 +753,13 @@ label {
 }
 
 .rating-legend td:nth-child(2) {
-  color: #d9ebff;
+  color: #000000;
+}
+
+.evaluation-hero p,
+.evaluation-panel .subtle,
+.evaluation-note-help {
+  color: #000000;
 }
 
 .evaluation-panel .subtle {
@@ -780,23 +775,23 @@ label {
 .evaluation-note-field {
   display: grid;
   gap: 0.45rem;
-  color: #dcecff;
+  color: #222222;
   font-weight: 600;
 }
 
 .evaluation-note-field textarea {
   resize: vertical;
   min-height: 8rem;
-  background: #0b2439;
+  background: #ffffff;
   color: var(--ink);
   border: 1px solid var(--line);
-  border-radius: 8px;
+  border-radius: 0;
   padding: 0.65rem 0.7rem;
   font-family: inherit;
 }
 
 .evaluation-note-field textarea::placeholder {
-  color: #7fa0bf;
+  color: #888888;
 }
 
 .evaluation-note-help {
@@ -824,8 +819,8 @@ label {
 
 .ranking-group-card {
   border: 1px solid var(--line);
-  border-radius: 12px;
-  background: #0d1b2c;
+  border-radius: 0;
+  background: #ffffff;
   padding: 0.9rem;
   display: grid;
   gap: 0.8rem;
@@ -854,8 +849,8 @@ label {
 
 .ranking-metric-card {
   border: 1px solid var(--line);
-  border-radius: 10px;
-  background: #0b2439;
+  border-radius: 0;
+  background: #ffffff;
   padding: 0.8rem;
   display: grid;
   gap: 0.55rem;
@@ -863,7 +858,7 @@ label {
 
 .ranking-metric-head h4 {
   margin: 0;
-  color: #dcecff;
+  color: #222222;
 }
 
 .ranking-course-grid {
@@ -874,8 +869,8 @@ label {
 
 .ranking-course-block {
   border: 1px solid var(--line);
-  border-radius: 10px;
-  background: #0a1f32;
+  border-radius: 0;
+  background: #ffffff;
   padding: 0.7rem;
   display: grid;
   gap: 0.45rem;
@@ -889,11 +884,11 @@ label {
 
 .ranking-course-rank {
   font-family: "IBM Plex Mono", monospace;
-  color: #9cc4e8;
+  color: #666666;
 }
 
 .ranking-course-name {
-  color: #eaf4ff;
+  color: #1a1a1a;
   font-family: "IBM Plex Mono", monospace;
 }
 
@@ -917,8 +912,8 @@ label {
 
 .ranking-category-card {
   border: 1px solid var(--line);
-  border-radius: 10px;
-  background: #0b2439;
+  border-radius: 0;
+  background: #ffffff;
   padding: 0.8rem 0.85rem;
   display: grid;
   gap: 0.35rem;
@@ -926,7 +921,14 @@ label {
 
 .ranking-category-title {
   font-weight: 600;
-  color: #dcecff;
+  color: #222222;
+}
+
+/* Keep button corners square, including button-like variants. */
+button,
+.star-button,
+.search-results button {
+  border-radius: 0;
 }
 
 .ranking-empty-state {
